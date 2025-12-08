@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EXIF Batch Editor</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/piexifjs" defer></script>
+    <script type="module" src="scripts/main.js" defer></script>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero__content">
+        <p class="hero__eyebrow">Powered by piexifjs</p>
+        <h1 class="hero__title">Batch-edit EXIF data in your browser</h1>
+        <p class="hero__subtitle">
+          Upload JPEG files and set EXIF key/value pairs once to apply them to every image.
+          Runs entirely in the browser with no uploads.
+        </p>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel">
+        <div class="panel__header">
+          <div>
+            <p class="eyebrow">Upload</p>
+            <h2>Add images</h2>
+            <p class="muted">Select the JPEG files you want to edit.</p>
+          </div>
+          <label class="button button--secondary" for="fileInput">Choose images</label>
+          <input id="fileInput" type="file" accept="image/jpeg" multiple hidden />
+        </div>
+        <div class="panel__body panel__body--column">
+          <div class="hint">
+            <p class="hint__title">TIP</p>
+            <p class="hint__text">
+              Processing happens in memory only. For large batches, keep the list small to stay snappy.
+            </p>
+          </div>
+          <div id="uploadStatus" class="status"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel__header">
+          <div>
+            <p class="eyebrow">EXIF entries</p>
+            <h2>Add common IFD0 tags</h2>
+            <p class="muted">Pick a common IFD0 tag from the dropdown and type the value.</p>
+          </div>
+        </div>
+        <div class="panel__body">
+          <form id="entryForm" class="entry-form">
+            <label class="field">
+              <span class="field__label">IFD0 tag</span>
+              <select id="tagSelect" required></select>
+            </label>
+            <label class="field">
+              <span class="field__label">Value</span>
+              <input
+                id="tagValue"
+                type="text"
+                placeholder="e.g., Olympus mju"
+                autocomplete="off"
+                required
+              />
+            </label>
+            <button class="button" type="submit">Add</button>
+          </form>
+
+          <div class="entry-list">
+            <div class="entry-list__header">
+              <h3>Pending EXIF entries</h3>
+              <button id="clearEntries" class="button button--ghost" type="button">Clear all</button>
+            </div>
+            <ul id="entryItems" class="entry-items"></ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel__header">
+          <div>
+            <p class="eyebrow">Apply</p>
+            <h2>Apply EXIF and download</h2>
+            <p class="muted">Applies all added entries to every uploaded image.</p>
+          </div>
+          <button id="applyExif" class="button" type="button">Apply EXIF</button>
+        </div>
+        <div class="panel__body panel__body--column">
+          <div id="applyStatus" class="status"></div>
+          <div id="imageList" class="image-grid"></div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
