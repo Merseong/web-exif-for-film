@@ -185,6 +185,24 @@
       </section>
     </main>
 
+    <div id="imageDetailOverlay" class="image-detail">
+      <div class="image-detail__dialog">
+        <button id="imageDetailClose" class="button button--ghost image-detail__close" type="button">
+          Close
+        </button>
+        <div class="image-detail__preview">
+          <img id="imageDetailImg" src="" alt="Selected image" />
+        </div>
+        <div class="image-detail__info">
+          <div>
+            <p id="imageDetailTitle" class="image-detail__title"></p>
+            <p id="imageDetailMeta" class="image-detail__meta muted"></p>
+          </div>
+          <ul id="imageDetailList" class="detail-list"></ul>
+        </div>
+      </div>
+    </div>
+
     <div id="loadingOverlay" class="loading-overlay">
       <div class="loading-overlay__content">
         <div class="spinner"></div>

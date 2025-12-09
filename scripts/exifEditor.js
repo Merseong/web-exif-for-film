@@ -33,6 +33,15 @@ export const COMMON_EXIF_TAGS = [
   { key: 0xa40a, label: "Sharpness" },
 ];
 
+export const TAG_LABELS = [...COMMON_IFD0_TAGS, ...COMMON_EXIF_TAGS].reduce(
+  (acc, tag) => {
+    acc[`0th-${tag.key}`] = tag.label;
+    acc[`Exif-${tag.key}`] = tag.label;
+    return acc;
+  },
+  {}
+);
+
 function parseKey(keyInput) {
   if (typeof keyInput === "number" && Number.isFinite(keyInput)) {
     return keyInput;

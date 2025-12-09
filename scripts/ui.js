@@ -1,4 +1,5 @@
 import { state } from "./state.js";
+import { TAG_LABELS } from "./exifEditor.js";
 
 const uploadStatusEl = document.getElementById("uploadStatus");
 const applyStatusEl = document.getElementById("applyStatus");
@@ -10,6 +11,12 @@ const presetGroupSelectEl = document.getElementById("activePresetGroup");
 const presetStatusEl = document.getElementById("presetStatus");
 const loadingOverlayEl = document.getElementById("loadingOverlay");
 const loadingTextEl = document.getElementById("loadingText");
+const detailOverlayEl = document.getElementById("imageDetailOverlay");
+const detailImageEl = document.getElementById("imageDetailImg");
+const detailTitleEl = document.getElementById("imageDetailTitle");
+const detailMetaEl = document.getElementById("imageDetailMeta");
+const detailListEl = document.getElementById("imageDetailList");
+const detailCloseEl = document.getElementById("imageDetailClose");
 
 let onRemoveImage = () => {};
 let onRemoveEntry = () => {};
@@ -71,6 +78,105 @@ export function showLoading(message = "Working...") {
 export function hideLoading() {
   if (!loadingOverlayEl) return;
   loadingOverlayEl.classList.remove("loading-overlay--visible");
+}
+
+function normalizeValue(value) {
+  if (Array.isArray(value)) return value.join(", ");
+  if (typeof value === "object" && value !== null) {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  }
+  return String(value);
+}
+
+function extractExifEntries(image) {
+  if (typeof piexif === "undefined") return [];
+  try {
+    const data = piexif.load(image.dataUrl);
+    const ifds = ["0th", "Exif", "GPS"];
+    const entries = [];
+    ifds.forEach((ifd) => {
+      const section = data[ifd];
+      if (!section) return;
+      Object.keys(section).forEach((keyStr) => {
+        const key = Number.parseInt(keyStr, 10);
+        const label = TAG_LABELS[`${ifd}-${key}`] || `0x${key.toString(16)}`;
+        entries.push({
+          ifd,
+          key,
+          label,
+          value: normalizeValue(section[keyStr]),
+        });
+      });
+    });
+    return entries;
+  } catch (error) {
+    console.warn("Failed to parse EXIF for image", error);
+    return [];
+  }
+}
+
+function hideDetail() {
+  if (!detailOverlayEl) return;
+  detailOverlayEl.classList.remove("image-detail--visible");
+}
+
+export function showImageDetail(image) {
+  if (!detailOverlayEl) return;
+  detailOverlayEl.classList.add("image-detail--visible");
+  if (detailImageEl) {
+    detailImageEl.src = image.dataUrl;
+    detailImageEl.alt = image.name;
+  }
+  if (detailTitleEl) {
+    detailTitleEl.textContent = image.name;
+  }
+  if (detailMetaEl) {
+    detailMetaEl.textContent = image.size;
+  }
+
+  if (detailListEl) {
+    detailListEl.innerHTML = "";
+    const entries = extractExifEntries(image);
+    if (entries.length === 0) {
+      const empty = document.createElement("li");
+      empty.className = "muted";
+      empty.textContent = "No EXIF entries found.";
+      detailListEl.appendChild(empty);
+    } else {
+      entries.forEach((entry) => {
+        const item = document.createElement("li");
+        item.className = "detail-entry";
+
+        const label = document.createElement("span");
+        label.className = "detail-entry__label";
+        label.textContent = entry.label;
+
+        const value = document.createElement("span");
+        value.className = "detail-entry__value";
+        value.textContent = entry.value;
+
+        item.appendChild(label);
+        item.appendChild(value);
+        detailListEl.appendChild(item);
+      });
+    }
+  }
+}
+
+if (detailOverlayEl) {
+  detailOverlayEl.addEventListener("click", (event) => {
+    if (event.target === detailOverlayEl) {
+      hideDetail();
+    }
+  });
+}
+
+if (detailCloseEl) {
+  detailCloseEl.addEventListener("click", hideDetail);
 }
 
 export function renderEntries() {
@@ -163,6 +269,12 @@ export function renderImages() {
     body.appendChild(title);
     body.appendChild(meta);
     body.appendChild(actions);
+
+    card.addEventListener("click", (event) => {
+      // Avoid triggering on button clicks
+      if (event.target.closest("button") || event.target.closest("a")) return;
+      showImageDetail(image);
+    });
 
     card.appendChild(img);
     card.appendChild(body);
