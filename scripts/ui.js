@@ -8,6 +8,8 @@ const presetGroupListEl = document.getElementById("presetGroupList");
 const presetValueListEl = document.getElementById("presetValueList");
 const presetGroupSelectEl = document.getElementById("activePresetGroup");
 const presetStatusEl = document.getElementById("presetStatus");
+const loadingOverlayEl = document.getElementById("loadingOverlay");
+const loadingTextEl = document.getElementById("loadingText");
 
 let onRemoveImage = () => {};
 let onRemoveEntry = () => {};
@@ -56,6 +58,19 @@ export function updateApplyStatus(message, tone) {
 
 export function updatePresetStatus(message, tone) {
   setStatus(presetStatusEl, message, tone);
+}
+
+export function showLoading(message = "Working...") {
+  if (!loadingOverlayEl) return;
+  loadingOverlayEl.classList.add("loading-overlay--visible");
+  if (loadingTextEl) {
+    loadingTextEl.textContent = message;
+  }
+}
+
+export function hideLoading() {
+  if (!loadingOverlayEl) return;
+  loadingOverlayEl.classList.remove("loading-overlay--visible");
 }
 
 export function renderEntries() {

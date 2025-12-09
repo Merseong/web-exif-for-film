@@ -1,5 +1,10 @@
 import { nextId, state } from "./state.js";
-import { updateUploadStatus, renderImages } from "./ui.js";
+import {
+  renderImages,
+  showLoading,
+  hideLoading,
+  updateUploadStatus,
+} from "./ui.js";
 
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -30,22 +35,27 @@ export async function handleFiles(fileList) {
     return;
   }
 
-  updateUploadStatus("Loading images...", "");
-  const results = await Promise.all(
-    files.map(async (file) => {
-      const dataUrl = await readFileAsDataUrl(file);
-      return {
-        id: nextId(),
-        name: file.name,
-        size: toReadableSize(file.size),
-        dataUrl,
-      };
-    })
-  );
+  showLoading("Loading images...");
+  try {
+    updateUploadStatus("Loading images...", "");
+    const results = await Promise.all(
+      files.map(async (file) => {
+        const dataUrl = await readFileAsDataUrl(file);
+        return {
+          id: nextId(),
+          name: file.name,
+          size: toReadableSize(file.size),
+          dataUrl,
+        };
+      })
+    );
 
-  state.images.push(...results);
-  updateUploadStatus(`${results.length} image(s) loaded.`, "success");
-  renderImages();
+    state.images.push(...results);
+    updateUploadStatus(`${results.length} image(s) loaded.`, "success");
+    renderImages();
+  } finally {
+    hideLoading();
+  }
 }
 
 export function removeImage(imageId) {

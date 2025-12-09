@@ -32,6 +32,10 @@
           <input id="fileInput" type="file" accept="image/jpeg" multiple hidden />
         </div>
         <div class="panel__body panel__body--column">
+          <div id="dropZone" class="dropzone">
+            <p class="dropzone__title">Drag & drop JPEGs here</p>
+            <p class="dropzone__subtitle">or click to browse</p>
+          </div>
           <div class="hint">
             <p class="hint__title">TIP</p>
             <p class="hint__text">
@@ -167,7 +171,12 @@
             <h2>Apply EXIF and download</h2>
             <p class="muted">Applies all added entries to every uploaded image.</p>
           </div>
-          <button id="applyExif" class="button" type="button">Apply EXIF</button>
+          <div class="panel__actions">
+            <button id="applyExif" class="button" type="button">Apply EXIF</button>
+            <button id="downloadAll" class="button button--secondary" type="button">
+              Download all
+            </button>
+          </div>
         </div>
         <div class="panel__body panel__body--column">
           <div id="applyStatus" class="status"></div>
@@ -175,5 +184,12 @@
         </div>
       </section>
     </main>
+
+    <div id="loadingOverlay" class="loading-overlay">
+      <div class="loading-overlay__content">
+        <div class="spinner"></div>
+        <p id="loadingText" class="loading-overlay__text">Working...</p>
+      </div>
+    </div>
   </body>
 </html>

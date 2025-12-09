@@ -8,6 +8,7 @@ import {
   removeEntry,
   setEntry,
 } from "./exifEditor.js";
+import { state } from "./state.js";
 import {
   registerRemoveHandlers,
   registerPresetHandlers,
@@ -18,6 +19,8 @@ import {
   updateApplyStatus,
   updatePresetStatus,
   updateUploadStatus,
+  showLoading,
+  hideLoading,
 } from "./ui.js";
 import {
   addPresetGroup,
@@ -38,7 +41,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const tagSelect = document.getElementById("tagSelect");
   const tagValue = document.getElementById("tagValue");
   const applyButton = document.getElementById("applyExif");
+  const downloadAllButton = document.getElementById("downloadAll");
   const clearEntriesBtn = document.getElementById("clearEntries");
+  const dropZone = document.getElementById("dropZone");
   const presetGroupForm = document.getElementById("presetGroupForm");
   const presetGroupName = document.getElementById("presetGroupName");
   const presetGroupTag = document.getElementById("presetGroupTag");
@@ -88,6 +93,43 @@ document.addEventListener("DOMContentLoaded", () => {
     fileInput.value = "";
   });
 
+  if (dropZone) {
+    let dragDepth = 0;
+    const clearHighlight = () => dropZone.classList.remove("dropzone--hover");
+
+    dropZone.addEventListener("click", () => {
+      fileInput.click();
+    });
+
+    document.addEventListener("dragenter", (event) => {
+      event.preventDefault();
+      dragDepth += 1;
+      dropZone.classList.add("dropzone--hover");
+    });
+
+    document.addEventListener("dragover", (event) => {
+      event.preventDefault();
+    });
+
+    ["dragleave"].forEach((evt) => {
+      document.addEventListener(evt, (event) => {
+        event.preventDefault();
+        dragDepth = Math.max(0, dragDepth - 1);
+        if (dragDepth === 0) clearHighlight();
+      });
+    });
+
+    document.addEventListener("drop", (event) => {
+      event.preventDefault();
+      clearHighlight();
+      dragDepth = 0;
+      const files = event.dataTransfer?.files;
+      if (files && files.length) {
+        handleFiles(files);
+      }
+    });
+  }
+
   entryForm.addEventListener("submit", (event) => {
     event.preventDefault();
     try {
@@ -116,10 +158,36 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   applyButton.addEventListener("click", () => {
-    const result = applyExifToImages();
-    renderImages();
-    const tone = result.success ? "success" : "error";
-    updateApplyStatus(result.message, tone);
+    showLoading("Applying EXIF to images...");
+    try {
+      const result = applyExifToImages();
+      renderImages();
+      const tone = result.success ? "success" : "error";
+      updateApplyStatus(result.message, tone);
+    } finally {
+      hideLoading();
+    }
+  });
+
+  downloadAllButton.addEventListener("click", () => {
+    if (state.images.length === 0) {
+      updateApplyStatus("No images to download. Upload and apply EXIF first.", "warning");
+      return;
+    }
+
+    state.images.forEach((image) => {
+      const link = document.createElement("a");
+      link.href = image.dataUrl;
+      link.download = `exif-${image.name}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    });
+
+    updateApplyStatus(
+      `Started download for ${state.images.length} image(s).`,
+      "success"
+    );
   });
 
   presetGroupForm.addEventListener("submit", (event) => {
