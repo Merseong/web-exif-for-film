@@ -14,6 +14,25 @@ export const COMMON_IFD0_TAGS = [
   { key: 0x8298, label: "Copyright" },
 ];
 
+export const COMMON_EXIF_TAGS = [
+  { key: 0x829a, label: "ExposureTime" },
+  { key: 0x829d, label: "FNumber" },
+  { key: 0x8822, label: "ExposureProgram" },
+  { key: 0x8827, label: "ISOSpeedRatings" },
+  { key: 0x9201, label: "ShutterSpeedValue" },
+  { key: 0x9204, label: "ExposureBiasValue" },
+  { key: 0x9207, label: "MeteringMode" },
+  { key: 0x9209, label: "Flash" },
+  { key: 0x920a, label: "FocalLength" },
+  { key: 0x920d, label: "SubjectDistance" },
+  { key: 0xa402, label: "ExposureMode" },
+  { key: 0xa403, label: "WhiteBalance" },
+  { key: 0xa406, label: "SceneCaptureType" },
+  { key: 0xa408, label: "Contrast" },
+  { key: 0xa409, label: "Saturation" },
+  { key: 0xa40a, label: "Sharpness" },
+];
+
 function parseKey(keyInput) {
   const trimmed = keyInput.trim();
   if (!trimmed) return null;

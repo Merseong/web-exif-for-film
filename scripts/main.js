@@ -1,6 +1,7 @@
 import { handleFiles, removeImage } from "./fileHandler.js";
 import {
   COMMON_IFD0_TAGS,
+  COMMON_EXIF_TAGS,
   addEntry,
   applyExifToImages,
   clearEntries,
@@ -22,13 +23,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const applyButton = document.getElementById("applyExif");
   const clearEntriesBtn = document.getElementById("clearEntries");
 
-  COMMON_IFD0_TAGS.forEach((tag, index) => {
+  const allTags = [
+    ...COMMON_IFD0_TAGS.map((tag) => ({ ...tag, ifd: "0th" })),
+    ...COMMON_EXIF_TAGS.map((tag) => ({ ...tag, ifd: "Exif" })),
+  ];
+
+  allTags.forEach((tag, index) => {
     const option = document.createElement("option");
     option.value = tag.key;
-    option.textContent = `${tag.label} (0x${tag.key
+    option.textContent = `${tag.label} [${tag.ifd}] (0x${tag.key
       .toString(16)
       .padStart(4, "0")})`;
     option.dataset.label = tag.label;
+    option.dataset.ifd = tag.ifd;
     if (index === 0) {
       option.selected = true;
       option.defaultSelected = true;
@@ -53,7 +60,12 @@ document.addEventListener("DOMContentLoaded", () => {
     event.preventDefault();
     try {
       const selectedTag = tagSelect.options[tagSelect.selectedIndex];
-      addEntry("0th", selectedTag.value, tagValue.value, selectedTag.dataset.label);
+      addEntry(
+        selectedTag.dataset.ifd,
+        selectedTag.value,
+        tagValue.value,
+        selectedTag.dataset.label
+      );
       renderEntries();
       entryForm.reset();
       updateApplyStatus(

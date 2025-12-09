@@ -16,3 +16,7 @@ Easier way only for film
 - [] exif reader -> what film is it?
 - [] PWA setting
 - [] CD setting
+
+# References
+
+[exiftool.org](https://exiftool.org/TagNames/EXIF.html)

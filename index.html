@@ -46,14 +46,17 @@
         <div class="panel__header">
           <div>
             <p class="eyebrow">EXIF entries</p>
-            <h2>Add common IFD0 tags</h2>
-            <p class="muted">Pick a common IFD0 tag from the dropdown and type the value.</p>
+            <h2>Add common tags</h2>
+            <p class="muted">
+              Pick a common IFD0 or ExifIFD tag (e.g., ISO, Aperture, ExposureMode) from the dropdown
+              and type the value.
+            </p>
           </div>
         </div>
         <div class="panel__body">
           <form id="entryForm" class="entry-form">
             <label class="field">
-              <span class="field__label">IFD0 tag</span>
+              <span class="field__label">Tag (IFD0 or ExifIFD)</span>
               <select id="tagSelect" required></select>
             </label>
             <label class="field">
