@@ -45,6 +45,84 @@
       <section class="panel">
         <div class="panel__header">
           <div>
+            <p class="eyebrow">Presets</p>
+            <h2>Save film, camera, lens values</h2>
+            <p class="muted">
+              Group related values, map them to an EXIF tag, and apply a saved value to your pending
+              entries with one click.
+            </p>
+          </div>
+          <div class="preset-actions">
+            <button id="exportPresets" class="button button--secondary" type="button">
+              Export JSON
+            </button>
+            <label class="button button--ghost" for="importPresetsInput">Import JSON</label>
+            <input id="importPresetsInput" type="file" accept="application/json" hidden />
+          </div>
+        </div>
+        <div class="panel__body">
+          <div class="preset-grid">
+            <div class="preset-column">
+              <h3>Groups</h3>
+              <p class="muted">Name the group and link it to an EXIF tag.</p>
+              <form id="presetGroupForm" class="entry-form">
+                <label class="field">
+                  <span class="field__label">Group name</span>
+                  <input
+                    id="presetGroupName"
+                    type="text"
+                    placeholder="e.g., Film, Camera, Lens"
+                    autocomplete="off"
+                    required
+                  />
+                </label>
+                <label class="field">
+                  <span class="field__label">EXIF tag mapping</span>
+                  <select id="presetGroupTag" required></select>
+                </label>
+                <button class="button" type="submit">Add group</button>
+              </form>
+              <ul id="presetGroupList" class="preset-list"></ul>
+            </div>
+
+            <div class="preset-column">
+              <div class="preset-column__header">
+                <div>
+                  <h3>Values</h3>
+                  <p class="muted">
+                    Choose the active group and add film/camera/lens presets. Applying a value sets
+                    the mapped EXIF tag in the pending entries list.
+                  </p>
+                </div>
+                <label class="field">
+                  <span class="field__label">Active group</span>
+                  <select id="activePresetGroup"></select>
+                </label>
+              </div>
+
+              <form id="presetValueForm" class="entry-form">
+                <label class="field">
+                  <span class="field__label">Value</span>
+                  <input
+                    id="presetValueInput"
+                    type="text"
+                    placeholder="e.g., kodak_ultramax_400"
+                    autocomplete="off"
+                    required
+                  />
+                </label>
+                <button class="button" type="submit">Add value</button>
+              </form>
+              <ul id="presetValueList" class="preset-values"></ul>
+            </div>
+          </div>
+          <div id="presetStatus" class="status"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel__header">
+          <div>
             <p class="eyebrow">EXIF entries</p>
             <h2>Add common tags</h2>
             <p class="muted">

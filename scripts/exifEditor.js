@@ -34,6 +34,10 @@ export const COMMON_EXIF_TAGS = [
 ];
 
 function parseKey(keyInput) {
+  if (typeof keyInput === "number" && Number.isFinite(keyInput)) {
+    return keyInput;
+  }
+  if (typeof keyInput !== "string") return null;
   const trimmed = keyInput.trim();
   if (!trimmed) return null;
   const radix = trimmed.startsWith("0x") || trimmed.startsWith("0X") ? 16 : 10;
@@ -85,6 +89,34 @@ export function addEntry(ifd, keyInput, valueInput, label = null) {
     value,
     original: valueInput,
   });
+}
+
+export function setEntry(ifd, keyInput, valueInput, label = null) {
+  const key = parseKey(keyInput);
+  if (key === null) {
+    throw new Error("Key must be decimal or hex (prefix with 0x).");
+  }
+  const value = normalizeValue(valueInput);
+  const keyHex = `0x${key.toString(16).padStart(4, "0")}`;
+  const entry = {
+    id: `${ifd}-${key}`,
+    ifd,
+    key,
+    keyHex,
+    label,
+    value,
+    original: valueInput,
+  };
+
+  const existingIndex = state.entries.findIndex(
+    (item) => item.ifd === ifd && item.key === key
+  );
+  if (existingIndex >= 0) {
+    state.entries[existingIndex] = entry;
+  } else {
+    state.entries.push(entry);
+  }
+  return entry;
 }
 
 export function clearEntries() {

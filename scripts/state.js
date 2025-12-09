@@ -1,6 +1,7 @@
 export const state = {
   images: [], // { id, name, size, dataUrl }
   entries: [], // { id, ifd, key, keyHex, label, value, original }
+  presets: { groups: [], activeGroupId: null }, // { groups, activeGroupId }
 };
 
 let idCounter = 0;
