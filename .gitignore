@@ -1,3 +1,5 @@
 .superpowers/
 src-tauri/target/
 dist/
+build/
+node_modules/

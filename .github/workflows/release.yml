@@ -9,6 +9,25 @@ permissions:
   contents: write
 
 jobs:
+  build-single-html:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build single HTML
+        run: node build-single.mjs
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/exif-editor.html
+          tag_name: ${{ github.ref_name }}
+
   build-tauri:
     strategy:
       fail-fast: false
