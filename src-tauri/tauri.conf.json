@@ -8,7 +8,6 @@
     "devUrl": "http://localhost:8000"
   },
   "app": {
-    "title": "EXIF Batch Editor",
     "windows": [
       {
         "title": "EXIF Batch Editor",
