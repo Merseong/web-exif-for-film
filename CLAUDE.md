@@ -56,6 +56,10 @@ UI action events (`"action:*"`) flow from ui.js to main.js:
 
 Navigation events: `"tab"`, `"step"` — triggered by main.js when user switches tabs or steps.
 
+### Rules
+
+- 사용자에게 표시되는 문자열을 추가/변경할 때, `scripts/i18n.js`의 3개 로케일(ko, en, ja)에 반드시 번역 키를 추가할 것. HTML에는 `data-i18n` / `data-i18n-placeholder` 속성을, JS에서는 `t("key")` 호출을 사용.
+
 ### Key Conventions
 
 - EXIF tags are identified by numeric key + IFD string (`"0th"` or `"Exif"`). Hex display format: `0x` + 4-digit padded hex.
