@@ -14,11 +14,18 @@
       <div class="hero__content">
         <div class="hero__top">
           <h1 class="hero__title" data-i18n="hero.title">EXIF Batch Editor</h1>
-          <select id="langSelect" class="lang-select">
-            <option value="ko">한국어</option>
-            <option value="en">English</option>
-            <option value="ja">日本語</option>
-          </select>
+          <div class="hero__controls">
+            <select id="themeSelect" class="hero__select">
+              <option value="system">System</option>
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+            <select id="langSelect" class="hero__select">
+              <option value="ko">한국어</option>
+              <option value="en">English</option>
+              <option value="ja">日本語</option>
+            </select>
+          </div>
         </div>
         <p class="hero__subtitle" data-i18n="hero.subtitle">
           Upload JPEG files, configure EXIF tags, and apply them in bulk.

@@ -91,6 +91,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initI18n();
 
+  // --- Theme ---
+  const THEME_KEY = "exifEditorTheme";
+  const themeSelect = document.getElementById("themeSelect");
+  const savedTheme = localStorage.getItem(THEME_KEY) || "system";
+  document.documentElement.dataset.theme = savedTheme;
+  if (themeSelect) {
+    themeSelect.value = savedTheme;
+    themeSelect.addEventListener("change", () => {
+      document.documentElement.dataset.theme = themeSelect.value;
+      localStorage.setItem(THEME_KEY, themeSelect.value);
+    });
+  }
+
+  // --- Language ---
   const langSelect = document.getElementById("langSelect");
   if (langSelect) {
     langSelect.value = getLang();
