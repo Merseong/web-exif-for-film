@@ -23,6 +23,33 @@ const DEFAULT_PRESETS = {
         "kentmere_pan_100",
       ],
     },
+    {
+      id: "camera",
+      name: "Camera",
+      target: { ifd: "0th", key: 0x010f, label: "Make" },
+      values: [
+        "YASHICA ELECTRO35 GTN",
+        "Fujica GM670",
+        "Zenza Bronica ETRSi",
+        "Zenza Bronica ETRS",
+        "Ricoh A-2",
+      ],
+    },
+    {
+      id: "focallength",
+      name: "FocalLength",
+      target: { ifd: "Exif", key: 0x920a, label: "FocalLength" },
+      values: ["35", "45", "50", "75", "100"],
+    },
+    {
+      id: "dev",
+      name: "Dev",
+      target: { ifd: "0th", key: 0x0131, label: "Software" },
+      values: [
+        "gorae_studio+noritsu_koki",
+        "joongangcolor+noritsu_koki",
+      ],
+    },
   ],
 };
 

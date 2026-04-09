@@ -147,6 +147,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  document.getElementById("clearImages")?.addEventListener("click", () => {
+    state.images = [];
+    emit("images");
+    updateUploadStatus("모든 이미지가 삭제되었습니다.", "warning");
+  });
+
   document.getElementById("step1Next")?.addEventListener("click", () => {
     if (state.images.length > 0) { state.currentStep = 2; emit("step"); }
   });
