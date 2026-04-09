@@ -39,6 +39,9 @@ import {
   reorderValue,
   mergePresets,
   normalizePresets,
+  hardClearPresets,
+  resetPresetsToDefault,
+  getDefaultPresets,
 } from "./presets.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -346,6 +349,23 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       updatePresetStatus(error.message, "error");
     }
+  });
+
+  document.getElementById("hardClearPresets")?.addEventListener("click", () => {
+    if (!confirm("모든 프리셋을 삭제합니다. 계속하시겠습니까?")) return;
+    hardClearPresets();
+    updatePresetStatus("모든 프리셋이 삭제되었습니다.", "warning");
+  });
+
+  document.getElementById("resetPresets")?.addEventListener("click", () => {
+    if (!confirm("기본 프리셋으로 복원합니다. 현재 프리셋은 사라집니다. 계속하시겠습니까?")) return;
+    resetPresetsToDefault();
+    updatePresetStatus("기본 프리셋으로 복원되었습니다.", "success");
+  });
+
+  document.getElementById("mergeDefaultPresets")?.addEventListener("click", () => {
+    const defaults = getDefaultPresets();
+    showMergeModal(defaults);
   });
 
   exportPresetsBtn.addEventListener("click", () => {

@@ -302,6 +302,20 @@ export function reorderValue(groupId, valueId, direction) {
   persistPresets();
 }
 
+export function hardClearPresets() {
+  state.presets = { version: 1, groups: [], activeGroupId: null };
+  persistPresets();
+}
+
+export function resetPresetsToDefault() {
+  state.presets = normalizePresets(clonePresets(DEFAULT_PRESETS));
+  persistPresets();
+}
+
+export function getDefaultPresets() {
+  return normalizePresets(clonePresets(DEFAULT_PRESETS));
+}
+
 export function exportPresetJson() {
   return JSON.stringify(state.presets, null, 2);
 }
