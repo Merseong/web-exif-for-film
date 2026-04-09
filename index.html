@@ -92,6 +92,32 @@
         <!-- Step 2: EXIF Settings -->
         <div id="step2" class="step step--hidden">
           <div class="step__body">
+            <!-- Film Preset -->
+            <section class="panel">
+              <div class="panel__body panel__body--column">
+                <p class="section-label" data-i18n="film.label">Film</p>
+                <div class="preset-search">
+                  <input id="filmSearch" type="text" data-i18n-placeholder="film.searchPlaceholder" placeholder="Search films..." />
+                </div>
+                <div id="filmCards" class="preset-card-group__cards"></div>
+                <div id="filmIsoRow" class="film-iso-row film-iso-row--hidden">
+                  <div class="film-iso-row__preview">
+                    <span id="filmIsoLabel" class="film-iso-row__label"></span>
+                    <div id="filmPreviewTags" class="film-preview-tags"></div>
+                  </div>
+                  <div class="film-iso-row__edit">
+                    <label class="field film-iso-row__field">
+                      <span class="field__label" data-i18n="film.isoOverride">ISO</span>
+                      <input id="filmIsoInput" type="number" min="0" step="1" />
+                    </label>
+                    <button id="filmIsoApply" class="button" type="button" data-i18n="film.applyIso">ISO 적용</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div class="step__divider"></div>
+
             <!-- Preset Quick-Pick -->
             <section class="panel">
               <div class="panel__body panel__body--column">
@@ -184,6 +210,38 @@
             <input id="mergePresetsInput" type="file" accept="application/json" hidden />
           </div>
         </div>
+
+        <!-- Film Management -->
+        <div class="preset-section">
+          <div class="preset-section__header">
+            <h3 data-i18n="film.label">Film</h3>
+            <div class="preset-section__actions">
+              <label class="field field--inline">
+                <span class="field__label" data-i18n="film.targetTag">Name tag</span>
+                <select id="filmTargetTag"></select>
+              </label>
+              <button id="resetFilms" class="button button--ghost" type="button" data-i18n="preset.resetDefault">Reset</button>
+            </div>
+          </div>
+          <form id="filmAddForm" class="entry-form">
+            <label class="field">
+              <span class="field__label" data-i18n="film.name">Film name</span>
+              <input id="filmAddName" type="text" data-i18n-placeholder="film.namePlaceholder" placeholder="e.g., kodak_portra_400" autocomplete="off" required />
+            </label>
+            <label class="field">
+              <span class="field__label">ISO</span>
+              <input id="filmAddIso" type="number" min="0" step="1" placeholder="e.g., 400" required />
+            </label>
+            <button class="button" type="submit" data-i18n="step2.add">Add</button>
+          </form>
+          <div class="preset-search">
+            <input id="filmMgmtSearch" type="text" data-i18n-placeholder="film.searchPlaceholder" placeholder="Search films..." />
+          </div>
+          <ul id="filmList" class="preset-list"></ul>
+          <div id="filmPagination" class="pagination"></div>
+        </div>
+
+        <div class="step__divider"></div>
 
         <div class="preset-grid">
           <!-- Groups Column -->

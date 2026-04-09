@@ -19,11 +19,18 @@ const detailMetaEl = document.getElementById("imageDetailMeta");
 const detailListEl = document.getElementById("imageDetailList");
 const detailCloseEl = document.getElementById("imageDetailClose");
 
+const filmCardsEl = document.getElementById("filmCards");
+const filmIsoRowEl = document.getElementById("filmIsoRow");
+const filmIsoLabelEl = document.getElementById("filmIsoLabel");
+const filmIsoInputEl = document.getElementById("filmIsoInput");
+const filmListEl = document.getElementById("filmList");
+
 const mergeOverlayEl = document.getElementById("mergeOverlay");
 const mergeContentEl = document.getElementById("mergeContent");
 const mergeSummaryEl = document.getElementById("mergeSummary");
 
 let mergeState = null; // { incoming, selections: Map<groupId, Set<valueId>> }
+let selectedFilm = null; // { id, name, iso }
 
 const tabButtons = document.querySelectorAll(".tab");
 const tabApplyEl = document.getElementById("tabApply");
@@ -183,6 +190,17 @@ if (detailCloseEl) {
   detailCloseEl.addEventListener("click", hideDetail);
 }
 
+document.getElementById("filmIsoApply")?.addEventListener("click", () => {
+  if (!selectedFilm) return;
+  const iso = Number(filmIsoInputEl?.value);
+  const resolvedIso = Number.isFinite(iso) ? iso : selectedFilm.iso;
+  const isoTag = { ifd: "Exif", key: 0x8827 };
+
+  // Only re-apply ISO (film name was already applied on card click)
+  emit("action:applyFilmIso", { iso: resolvedIso, isoTag });
+  updateFilmPreview(selectedFilm.name, resolvedIso);
+});
+
 export function renderThumbnails() {
   const thumbnailGrid = document.getElementById("thumbnailGrid");
   if (!thumbnailGrid) return;
@@ -281,6 +299,273 @@ export function renderPresetCards(filter = "") {
     section.appendChild(cardsWrapper);
     presetCardGroups.appendChild(section);
   });
+}
+
+function updateFilmPreview(name, iso) {
+  if (filmIsoLabelEl) {
+    filmIsoLabelEl.textContent = t("film.selected", { name });
+  }
+  const previewEl = document.getElementById("filmPreviewTags");
+  if (previewEl) {
+    const targetTag = state.filmPresets.targetTag;
+    previewEl.innerHTML = "";
+
+    const nameTag = document.createElement("span");
+    nameTag.className = "film-preview-tag";
+    nameTag.innerHTML = `<strong>${targetTag.label || "Model"}</strong> = ${name}`;
+    previewEl.appendChild(nameTag);
+
+    const isoTag = document.createElement("span");
+    isoTag.className = "film-preview-tag";
+    isoTag.innerHTML = `<strong>ISOSpeedRatings</strong> = ${iso}`;
+    previewEl.appendChild(isoTag);
+  }
+}
+
+export function renderFilmCards(filter = "") {
+  if (!filmCardsEl) return;
+  filmCardsEl.innerHTML = "";
+
+  const films = state.filmPresets.films;
+  if (!films || films.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "muted";
+    empty.textContent = t("film.empty");
+    filmCardsEl.appendChild(empty);
+    return;
+  }
+
+  const query = filter.toLowerCase().trim();
+  const filtered = query
+    ? films.filter((f) => f.name.toLowerCase().includes(query) || String(f.iso).includes(query))
+    : films;
+
+  if (filtered.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "muted";
+    empty.textContent = t("empty.noMatch");
+    filmCardsEl.appendChild(empty);
+    return;
+  }
+
+  filtered.forEach((film) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "preset-card";
+
+    if (selectedFilm && selectedFilm.id === film.id) {
+      btn.classList.add("preset-card--selected");
+    }
+
+    const nameText = document.createTextNode(film.name + " ");
+    btn.appendChild(nameText);
+
+    const isoSpan = document.createElement("span");
+    isoSpan.className = "film-item__iso";
+    isoSpan.textContent = `ISO ${film.iso}`;
+    btn.appendChild(isoSpan);
+
+    btn.addEventListener("click", () => {
+      selectedFilm = { id: film.id, name: film.name, iso: film.iso };
+      // Immediately apply film name + default ISO
+      const targetTag = state.filmPresets.targetTag;
+      const isoTag = { ifd: "Exif", key: 0x8827 };
+      emit("action:applyFilm", {
+        name: film.name,
+        iso: film.iso,
+        targetTag,
+        isoTag,
+      });
+      // Show ISO edit row
+      if (filmIsoRowEl) {
+        filmIsoRowEl.classList.remove("film-iso-row--hidden");
+      }
+      if (filmIsoInputEl) {
+        filmIsoInputEl.value = film.iso;
+      }
+      updateFilmPreview(film.name, film.iso);
+      renderFilmCards(filter);
+    });
+
+    filmCardsEl.appendChild(btn);
+  });
+}
+
+const FILMS_PER_PAGE = 10;
+let filmListPage = 1;
+let filmListFilter = "";
+
+export function renderFilmList() {
+  if (!filmListEl) return;
+  filmListEl.innerHTML = "";
+
+  const films = state.filmPresets.films;
+  if (!films || films.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "muted";
+    empty.textContent = t("film.empty");
+    filmListEl.appendChild(empty);
+    renderFilmPagination(0);
+    return;
+  }
+
+  const query = filmListFilter.toLowerCase().trim();
+  const filtered = query
+    ? films.filter((f) => f.name.toLowerCase().includes(query) || String(f.iso).includes(query))
+    : films;
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / FILMS_PER_PAGE));
+  if (filmListPage > totalPages) filmListPage = totalPages;
+  const start = (filmListPage - 1) * FILMS_PER_PAGE;
+  const paged = filtered.slice(start, start + FILMS_PER_PAGE);
+
+  if (paged.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "muted";
+    empty.textContent = t("empty.noMatch");
+    filmListEl.appendChild(empty);
+    renderFilmPagination(0);
+    return;
+  }
+
+  paged.forEach((film) => {
+    const item = document.createElement("li");
+    item.className = "preset-value";
+
+    const nameSpan = document.createElement("span");
+    nameSpan.textContent = film.name;
+
+    const isoSpan = document.createElement("span");
+    isoSpan.className = "film-item__iso";
+    isoSpan.textContent = `ISO ${film.iso}`;
+
+    const actions = document.createElement("div");
+    actions.className = "preset-value__actions";
+
+    const upBtn = document.createElement("button");
+    upBtn.type = "button";
+    upBtn.className = "preset-item__btn";
+    upBtn.textContent = "\u2191";
+    upBtn.addEventListener("click", () =>
+      emit("action:reorderFilm", { filmId: film.id, direction: -1 })
+    );
+
+    const downBtn = document.createElement("button");
+    downBtn.type = "button";
+    downBtn.className = "preset-item__btn";
+    downBtn.textContent = "\u2193";
+    downBtn.addEventListener("click", () =>
+      emit("action:reorderFilm", { filmId: film.id, direction: 1 })
+    );
+
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "preset-item__btn";
+    editBtn.textContent = t("action.edit");
+    editBtn.addEventListener("click", () => {
+      const nameInput = document.createElement("input");
+      nameInput.type = "text";
+      nameInput.className = "preset-item__edit-input";
+      nameInput.value = film.name;
+      nameSpan.replaceWith(nameInput);
+
+      const isoInput = document.createElement("input");
+      isoInput.type = "number";
+      isoInput.className = "preset-item__edit-input";
+      isoInput.value = film.iso;
+      isoInput.style.width = "80px";
+      isoSpan.replaceWith(isoInput);
+
+      nameInput.focus();
+
+      const commitRename = () => {
+        emit("action:renameFilm", {
+          filmId: film.id,
+          newName: nameInput.value,
+          newIso: isoInput.value,
+        });
+      };
+
+      nameInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          nameInput.removeEventListener("blur", commitRename);
+          isoInput.removeEventListener("blur", commitRename);
+          commitRename();
+        }
+      });
+      isoInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          nameInput.removeEventListener("blur", commitRename);
+          isoInput.removeEventListener("blur", commitRename);
+          commitRename();
+        }
+      });
+      nameInput.addEventListener("blur", () => {
+        // Delay to allow isoInput to receive focus without triggering commit
+        setTimeout(() => {
+          if (document.activeElement !== isoInput) {
+            commitRename();
+          }
+        }, 100);
+      });
+      isoInput.addEventListener("blur", () => {
+        setTimeout(() => {
+          if (document.activeElement !== nameInput) {
+            commitRename();
+          }
+        }, 100);
+      });
+    });
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "preset-item__btn preset-item__btn--danger";
+    removeBtn.textContent = t("action.remove");
+    removeBtn.addEventListener("click", () => emit("action:removeFilm", film.id));
+
+    actions.appendChild(upBtn);
+    actions.appendChild(downBtn);
+    actions.appendChild(editBtn);
+    actions.appendChild(removeBtn);
+
+    item.appendChild(nameSpan);
+    item.appendChild(isoSpan);
+    item.appendChild(actions);
+    filmListEl.appendChild(item);
+  });
+
+  renderFilmPagination(totalPages);
+}
+
+function renderFilmPagination(totalPages) {
+  const container = document.getElementById("filmPagination");
+  if (!container) return;
+  container.innerHTML = "";
+  if (totalPages <= 1) return;
+
+  const prev = document.createElement("button");
+  prev.type = "button";
+  prev.className = "pagination__btn";
+  prev.textContent = "←";
+  prev.disabled = filmListPage <= 1;
+  prev.addEventListener("click", () => { filmListPage--; renderFilmList(); });
+
+  const info = document.createElement("span");
+  info.className = "pagination__info";
+  info.textContent = t("film.pageInfo", { current: filmListPage, total: totalPages });
+
+  const next = document.createElement("button");
+  next.type = "button";
+  next.className = "pagination__btn";
+  next.textContent = "→";
+  next.disabled = filmListPage >= totalPages;
+  next.addEventListener("click", () => { filmListPage++; renderFilmList(); });
+
+  container.appendChild(prev);
+  container.appendChild(info);
+  container.appendChild(next);
 }
 
 export function renderEntryChips() {
@@ -992,6 +1277,16 @@ export function initUI() {
   on("entries", () => {
     renderPresetCards(presetSearchInput ? presetSearchInput.value : "");
   });
+  on("films", () => {
+    const filmSearchEl = document.getElementById("filmSearch");
+    renderFilmCards(filmSearchEl?.value || "");
+  });
+  on("films", renderFilmList);
+  on("action:filmListFilter", (filter) => {
+    filmListFilter = filter;
+    filmListPage = 1;
+    renderFilmList();
+  });
   on("tab", renderTabs);
   on("step", renderStep);
   on("step", renderApplySummary);
@@ -1007,6 +1302,8 @@ export function initUI() {
   renderPresetGroups();
   renderPresetValues();
   renderPresetCards();
+  renderFilmCards();
+  renderFilmList();
   renderApplySummary();
   renderTabs();
   renderStep();
@@ -1023,4 +1320,6 @@ export function rerenderAll() {
   renderImages();
   renderPresetGroups();
   renderPresetValues();
+  renderFilmCards();
+  renderFilmList();
 }

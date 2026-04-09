@@ -4,25 +4,8 @@ const STORAGE_KEY = "exifPresetGroups";
 
 const DEFAULT_PRESETS = {
   version: 1,
-  activeGroupId: "film",
+  activeGroupId: "camera",
   groups: [
-    {
-      id: "film",
-      name: "Film",
-      target: { ifd: "0th", key: 0x0110, label: "Model" },
-      values: [
-        "kodak_ultramax_400",
-        "kodak_gold_200",
-        "kodak_ektar_100",
-        "kodak_portra_160",
-        "harman_phoenix_200",
-        "cinestill_800T",
-        "cinestill_400D",
-        "kodak_ektarchrome_e100d",
-        "kodak_ektarchrome_e100",
-        "kentmere_pan_100",
-      ],
-    },
     {
       id: "camera",
       name: "Camera",

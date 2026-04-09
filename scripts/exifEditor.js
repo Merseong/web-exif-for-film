@@ -55,6 +55,8 @@ function parseKey(keyInput) {
 }
 
 function normalizeValue(value) {
+  if (typeof value === "number") return value;
+  if (typeof value !== "string") return String(value);
   if (value.trim() === "") return "";
   const asNumber = Number(value);
   if (!Number.isNaN(asNumber)) return asNumber;

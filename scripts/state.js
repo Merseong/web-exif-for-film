@@ -2,6 +2,7 @@ export const state = {
   images: [], // { id, name, size, dataUrl }
   entries: [], // { id, ifd, key, keyHex, label, value, original }
   presets: { groups: [], activeGroupId: null }, // { groups, activeGroupId }
+  filmPresets: { films: [], targetTag: null }, // { films, targetTag }
   activeTab: "apply", // "apply" | "presets"
   currentStep: 1, // 1 | 2 | 3
 };

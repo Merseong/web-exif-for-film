@@ -1229,6 +1229,108 @@ select {
   .apply-summary {
     flex-direction: column;
   }
+
+  html {
+    font-size: 13px;
+  }
+
+  .hero {
+    padding: 1.5em 1em 1em;
+  }
+
+  .hero__title {
+    font-size: 1.4em;
+  }
+
+  .hero__top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6em;
+  }
+
+  .hero__controls {
+    width: 100%;
+  }
+
+  .hero__select {
+    flex: 1;
+  }
+
+  .layout {
+    padding: 0 0.8em 2.5em;
+    gap: 1em;
+  }
+
+  .panel__header {
+    padding: 0.8em 1em;
+  }
+
+  .panel__body {
+    padding: 0.8em 1em;
+  }
+
+  .entry-form {
+    grid-template-columns: 1fr;
+  }
+
+  .preset-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .preset-card {
+    padding: 0.4em 0.8em;
+  }
+
+  .film-iso-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5em;
+  }
+
+  .film-iso-row__edit {
+    flex-direction: column;
+  }
+
+  .film-iso-row__field {
+    width: 100%;
+  }
+
+  .preset-section__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5em;
+  }
+
+  .preset-section__actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .field--inline {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .field--inline select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .preset-value__actions,
+  .preset-item__actions {
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+
+  .image-grid {
+    grid-template-columns: repeat(auto-fit, minmax(10em, 1fr));
+    gap: 0.6em;
+  }
+
+  .update-banner {
+    margin: 0 0.8em;
+    padding: 0.4em 0.8em;
+  }
 }
 
 /* --- Footer --- */
@@ -1253,6 +1355,37 @@ select {
 .footer__sep {
   margin: 0 6px;
   opacity: 0.4;
+}
+
+/* --- Pagination --- */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.pagination__btn {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 4px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.pagination__btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.pagination__info {
+  font-size: 12px;
+  color: var(--muted);
 }
 
 /* --- Update banner --- */
@@ -1293,4 +1426,102 @@ select {
   margin-left: auto;
   font-size: 14px;
   padding: 0;
+}
+
+/* --- Film preset (Step 2) --- */
+.film-iso-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card-hover);
+}
+
+.film-iso-row--hidden {
+  display: none;
+}
+
+.film-iso-row__preview {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.film-iso-row__label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.film-preview-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.film-preview-tag {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.film-preview-tag strong {
+  color: var(--text);
+}
+
+.film-iso-row__edit {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.film-iso-row__field {
+  width: 90px;
+}
+
+.film-iso-row__field input {
+  width: 100%;
+}
+
+/* --- Film management section --- */
+.preset-section {
+  margin-bottom: 8px;
+}
+
+.preset-section > * + * {
+  margin-top: 12px;
+}
+
+.preset-section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.preset-section__actions {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.field--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.field--inline select {
+  min-width: 180px;
+}
+
+.film-item__iso {
+  font-size: 12px;
+  color: var(--muted);
 }

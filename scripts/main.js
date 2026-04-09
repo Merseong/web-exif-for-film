@@ -14,6 +14,7 @@ import {
   initUI,
   rerenderAll,
   renderPresetCards,
+  renderFilmCards,
   updateApplyStatus,
   updatePresetStatus,
   updateUploadStatus,
@@ -46,6 +47,22 @@ import {
   resetPresetsToDefault,
   getDefaultPresets,
 } from "./presets.js";
+import {
+  initFilmStore,
+  addFilm,
+  removeFilm,
+  renamFilm,
+  reorderFilm,
+  resetFilmsToDefault,
+  hardClearFilms,
+  getDefaultFilms,
+  getFilmTargetTag,
+  getFilmIsoTag,
+  setFilmTargetTag,
+  exportFilmJson,
+  importFilmJson,
+  mergeFilms,
+} from "./filmPresets.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const fileInput = document.getElementById("fileInput");
@@ -116,6 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   initPresetStore();
+  initFilmStore();
   initUI();
   initVersionCheck();
 
@@ -126,6 +144,59 @@ document.addEventListener("DOMContentLoaded", () => {
       renderPresetCards(presetSearchInput.value);
     });
   }
+
+  // --- Film search (Step 2) ---
+  const filmSearchInput = document.getElementById("filmSearch");
+  if (filmSearchInput) {
+    filmSearchInput.addEventListener("input", () => {
+      renderFilmCards(filmSearchInput.value);
+    });
+  }
+
+  // --- Film search (Management tab) ---
+  const filmMgmtSearchInput = document.getElementById("filmMgmtSearch");
+  if (filmMgmtSearchInput) {
+    filmMgmtSearchInput.addEventListener("input", () => {
+      // Update the filter used by renderFilmList and re-render
+      emit("action:filmListFilter", filmMgmtSearchInput.value);
+    });
+  }
+
+  // --- Film target tag selector ---
+  const filmTargetTagEl = document.getElementById("filmTargetTag");
+  if (filmTargetTagEl) {
+    allTags.forEach((tag) => {
+      const option = document.createElement("option");
+      option.value = `${tag.ifd}|${tag.key}`;
+      option.textContent = `${tag.label} [${tag.ifd}]`;
+      option.dataset.label = tag.label;
+      option.dataset.ifd = tag.ifd;
+      option.dataset.key = tag.key;
+      filmTargetTagEl.appendChild(option);
+    });
+    const current = getFilmTargetTag();
+    filmTargetTagEl.value = `${current.ifd}|${current.key}`;
+
+    filmTargetTagEl.addEventListener("change", () => {
+      const opt = filmTargetTagEl.options[filmTargetTagEl.selectedIndex];
+      setFilmTargetTag(opt.dataset.ifd, opt.dataset.key, opt.dataset.label);
+    });
+  }
+
+  // --- Film add form ---
+  const filmAddForm = document.getElementById("filmAddForm");
+  filmAddForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    try {
+      const nameInput = document.getElementById("filmAddName");
+      const isoInput = document.getElementById("filmAddIso");
+      addFilm(nameInput.value, isoInput.value);
+      filmAddForm.reset();
+      updatePresetStatus(t("film.added"), "success");
+    } catch (error) {
+      updatePresetStatus(error.message, "error");
+    }
+  });
 
   // --- Action event handlers ---
 
@@ -169,6 +240,38 @@ document.addEventListener("DOMContentLoaded", () => {
   on("action:renameValue", ({ groupId, valueId, newLabel }) => renameValue(groupId, valueId, newLabel));
   on("action:reorderGroup", ({ groupId, direction }) => reorderGroup(groupId, direction));
   on("action:reorderValue", ({ groupId, valueId, direction }) => reorderValue(groupId, valueId, direction));
+
+  // --- Film action handlers ---
+
+  on("action:applyFilm", ({ name, iso, targetTag, isoTag }) => {
+    setEntry(targetTag.ifd, targetTag.key, name, targetTag.label);
+    setEntry(isoTag.ifd, isoTag.key, iso, "ISOSpeedRatings");
+    updateApplyStatus(t("film.applied", { name, iso }), "success");
+  });
+
+  on("action:applyFilmIso", ({ iso, isoTag }) => {
+    setEntry(isoTag.ifd, isoTag.key, iso, "ISOSpeedRatings");
+    updateApplyStatus(t("film.isoUpdated", { iso }), "success");
+  });
+
+  on("action:removeFilm", (filmId) => {
+    removeFilm(filmId);
+    updatePresetStatus(t("film.removed"), "warning");
+  });
+
+  on("action:renameFilm", ({ filmId, newName, newIso }) => {
+    renamFilm(filmId, newName, newIso);
+  });
+
+  on("action:reorderFilm", ({ filmId, direction }) => {
+    reorderFilm(filmId, direction);
+  });
+
+  document.getElementById("resetFilms")?.addEventListener("click", () => {
+    if (!confirm(t("confirm.resetDefault"))) return;
+    resetFilmsToDefault();
+    updatePresetStatus(t("film.resetDone"), "success");
+  });
 
   // --- Tab & step navigation ---
 
@@ -383,12 +486,14 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("hardClearPresets")?.addEventListener("click", () => {
     if (!confirm(t("confirm.hardClear"))) return;
     hardClearPresets();
+    hardClearFilms();
     updatePresetStatus(t("status.hardCleared"), "warning");
   });
 
   document.getElementById("resetPresets")?.addEventListener("click", () => {
     if (!confirm(t("confirm.resetDefault"))) return;
     resetPresetsToDefault();
+    resetFilmsToDefault();
     updatePresetStatus(t("status.resetDone"), "success");
   });
 
@@ -398,7 +503,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   exportPresetsBtn.addEventListener("click", () => {
-    const json = exportPresetJson();
+    const combined = {
+      presets: JSON.parse(exportPresetJson()),
+      filmPresets: JSON.parse(exportFilmJson()),
+    };
+    const json = JSON.stringify(combined, null, 2);
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -415,7 +524,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const [file] = event.target.files;
     if (!file) return;
     try {
-      await importPresetFile(file);
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      // Support both combined format and legacy presets-only format
+      if (parsed.presets) {
+        importPresetJson(JSON.stringify(parsed.presets));
+      } else {
+        importPresetJson(text);
+      }
+      if (parsed.filmPresets) {
+        importFilmJson(JSON.stringify(parsed.filmPresets));
+      }
       updatePresetStatus(t("status.imported", { file: file.name }), "success");
     } catch (error) {
       updatePresetStatus(t("status.importFailed", { error: error.message }), "error");
@@ -428,13 +547,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const mergePresetsInput = document.getElementById("mergePresetsInput");
 
+  let pendingFilmMerge = null; // filmPresets data from merge JSON
+
   mergePresetsInput?.addEventListener("change", async (event) => {
     const [file] = event.target.files;
     if (!file) return;
     try {
       const text = await file.text();
       const parsed = JSON.parse(text);
-      const normalized = normalizePresets(parsed);
+      // Support combined format or legacy presets-only
+      const presetData = parsed.presets || parsed;
+      const normalized = normalizePresets(presetData);
+      pendingFilmMerge = parsed.filmPresets || null;
       showMergeModal(normalized);
     } catch (error) {
       updatePresetStatus(t("status.mergeFailed", { error: error.message }), "error");
@@ -446,8 +570,21 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("mergeConfirm")?.addEventListener("click", () => {
     const incoming = getMergeIncoming();
     const selections = getMergeSelections();
-    if (!incoming || selections.length === 0) return;
+    if (!incoming || selections.length === 0) {
+      // Even if no preset groups selected, merge films if present
+      if (pendingFilmMerge) {
+        mergeFilms(pendingFilmMerge);
+        pendingFilmMerge = null;
+        hideMergeModal();
+        updatePresetStatus(t("status.merged"), "success");
+      }
+      return;
+    }
     mergePresets(incoming, selections);
+    if (pendingFilmMerge) {
+      mergeFilms(pendingFilmMerge);
+      pendingFilmMerge = null;
+    }
     hideMergeModal();
     updatePresetStatus(t("status.merged"), "success");
   });
