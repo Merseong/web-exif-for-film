@@ -560,7 +560,7 @@ export function renderPresetGroups() {
     const editBtn = document.createElement("button");
     editBtn.type = "button";
     editBtn.className = "preset-item__btn";
-    editBtn.textContent = "\u270E";
+    editBtn.textContent = "편집";
     editBtn.addEventListener("click", () => {
       const input = document.createElement("input");
       input.type = "text";
@@ -661,7 +661,7 @@ export function renderPresetValues() {
     const editBtn = document.createElement("button");
     editBtn.type = "button";
     editBtn.className = "preset-item__btn";
-    editBtn.textContent = "\u270E";
+    editBtn.textContent = "편집";
     editBtn.addEventListener("click", () => {
       const input = document.createElement("input");
       input.type = "text";
