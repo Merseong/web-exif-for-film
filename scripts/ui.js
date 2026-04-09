@@ -1,4 +1,4 @@
-import { state } from "./state.js";
+import { state, on, emit } from "./state.js";
 import { TAG_LABELS } from "./exifEditor.js";
 
 const uploadStatusEl = document.getElementById("uploadStatus");
@@ -18,11 +18,21 @@ const detailMetaEl = document.getElementById("imageDetailMeta");
 const detailListEl = document.getElementById("imageDetailList");
 const detailCloseEl = document.getElementById("imageDetailClose");
 
-let onRemoveImage = () => {};
-let onRemoveEntry = () => {};
-let onRemovePresetGroup = () => {};
-let onApplyPresetValue = () => {};
-let onRemovePresetValue = () => {};
+const tabButtons = document.querySelectorAll(".tab");
+const tabApplyEl = document.getElementById("tabApply");
+const tabPresetsEl = document.getElementById("tabPresets");
+const stepperEl = document.getElementById("stepper");
+const stepEls = [
+  document.getElementById("step1"),
+  document.getElementById("step2"),
+  document.getElementById("step3"),
+];
+const step1NextBtn = document.getElementById("step1Next");
+const step2PrevBtn = document.getElementById("step2Prev");
+const step2NextBtn = document.getElementById("step2Next");
+const step3PrevBtn = document.getElementById("step3Prev");
+
+const STEP_LABELS = ["업로드", "EXIF 설정", "적용 & 다운로드"];
 
 function setStatus(el, message, tone) {
   el.className = "status";
@@ -38,21 +48,6 @@ function setStatus(el, message, tone) {
     el.classList.add(classMap[tone]);
   }
   el.textContent = message;
-}
-
-export function registerRemoveHandlers({ image, entry }) {
-  onRemoveImage = image || onRemoveImage;
-  onRemoveEntry = entry || onRemoveEntry;
-}
-
-export function registerPresetHandlers({
-  removeGroup,
-  applyValue,
-  removeValue,
-} = {}) {
-  onRemovePresetGroup = removeGroup || onRemovePresetGroup;
-  onApplyPresetValue = applyValue || onApplyPresetValue;
-  onRemovePresetValue = removeValue || onRemovePresetValue;
 }
 
 export function updateUploadStatus(message, tone) {
@@ -209,7 +204,7 @@ export function renderEntries() {
     removeBtn.className = "button button--ghost";
     removeBtn.textContent = "Remove";
     removeBtn.addEventListener("click", () => {
-      onRemoveEntry(entry.id);
+      emit("action:removeEntry", entry.id);
     });
 
     item.appendChild(text);
@@ -261,7 +256,7 @@ export function renderImages() {
     remove.type = "button";
     remove.className = "button button--ghost";
     remove.textContent = "Remove from list";
-    remove.addEventListener("click", () => onRemoveImage(image.id));
+    remove.addEventListener("click", () => emit("action:removeImage", image.id));
 
     actions.appendChild(remove);
     actions.appendChild(download);
@@ -339,7 +334,7 @@ export function renderPresetGroups() {
     remove.type = "button";
     remove.className = "button button--ghost";
     remove.textContent = "Delete";
-    remove.addEventListener("click", () => onRemovePresetGroup(group.id));
+    remove.addEventListener("click", () => emit("action:removePresetGroup", group.id));
 
     item.appendChild(text);
     item.appendChild(remove);
@@ -387,7 +382,7 @@ export function renderPresetValues() {
     applyBtn.className = "button button--secondary";
     applyBtn.textContent = "Apply";
     applyBtn.addEventListener("click", () =>
-      onApplyPresetValue(activeGroup.id, value.id)
+      emit("action:applyPresetValue", { groupId: activeGroup.id, valueId: value.id })
     );
 
     const removeBtn = document.createElement("button");
@@ -395,7 +390,7 @@ export function renderPresetValues() {
     removeBtn.className = "button button--ghost";
     removeBtn.textContent = "Remove";
     removeBtn.addEventListener("click", () =>
-      onRemovePresetValue(activeGroup.id, value.id)
+      emit("action:removePresetValue", { groupId: activeGroup.id, valueId: value.id })
     );
 
     actions.appendChild(applyBtn);
@@ -405,4 +400,110 @@ export function renderPresetValues() {
     item.appendChild(actions);
     presetValueListEl.appendChild(item);
   });
+}
+
+export function renderTabs() {
+  tabButtons.forEach((btn) => {
+    if (btn.dataset.tab === state.activeTab) {
+      btn.classList.add("tab--active");
+    } else {
+      btn.classList.remove("tab--active");
+    }
+  });
+  if (tabApplyEl) {
+    tabApplyEl.classList.toggle("tab-content--hidden", state.activeTab !== "apply");
+  }
+  if (tabPresetsEl) {
+    tabPresetsEl.classList.toggle("tab-content--hidden", state.activeTab !== "presets");
+  }
+}
+
+export function renderStepper() {
+  if (!stepperEl) return;
+  stepperEl.innerHTML = "";
+
+  for (let i = 0; i < 3; i++) {
+    const stepNum = i + 1;
+
+    if (i > 0) {
+      const line = document.createElement("div");
+      line.className = "stepper__line";
+      if (stepNum < state.currentStep) {
+        line.classList.add("stepper__line--done");
+      } else if (stepNum === state.currentStep) {
+        line.classList.add("stepper__line--active");
+      }
+      stepperEl.appendChild(line);
+    }
+
+    const stepDiv = document.createElement("div");
+    stepDiv.className = "stepper__step";
+
+    const circle = document.createElement("div");
+    circle.className = "stepper__circle";
+
+    if (stepNum < state.currentStep) {
+      circle.classList.add("stepper__circle--done");
+      circle.textContent = "\u2713";
+      stepDiv.style.cursor = "pointer";
+      stepDiv.addEventListener("click", () => {
+        emit("action:goToStep", stepNum);
+      });
+    } else if (stepNum === state.currentStep) {
+      circle.classList.add("stepper__circle--active");
+      circle.textContent = stepNum;
+    } else {
+      circle.classList.add("stepper__circle--muted");
+      circle.textContent = stepNum;
+    }
+
+    const label = document.createElement("span");
+    label.className = "stepper__label";
+    label.textContent = STEP_LABELS[i];
+
+    stepDiv.appendChild(circle);
+    stepDiv.appendChild(label);
+    stepperEl.appendChild(stepDiv);
+  }
+}
+
+export function renderStep() {
+  stepEls.forEach((el, i) => {
+    if (!el) return;
+    const stepNum = i + 1;
+    if (stepNum === state.currentStep) {
+      el.classList.remove("step--hidden");
+    } else {
+      el.classList.add("step--hidden");
+    }
+  });
+
+  if (step1NextBtn) {
+    step1NextBtn.disabled = state.images.length === 0;
+  }
+  if (step2NextBtn) {
+    step2NextBtn.disabled = state.entries.length === 0;
+  }
+
+  renderStepper();
+}
+
+export function initUI() {
+  on("entries", renderEntries);
+  on("images", renderImages);
+  on("presets", () => {
+    renderPresetGroups();
+    renderPresetValues();
+  });
+  on("tab", renderTabs);
+  on("step", renderStep);
+  on("images", renderStep);
+  on("entries", renderStep);
+
+  renderEntries();
+  renderImages();
+  renderPresetGroups();
+  renderPresetValues();
+  renderTabs();
+  renderStep();
 }

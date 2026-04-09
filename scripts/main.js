@@ -8,14 +8,9 @@ import {
   removeEntry,
   setEntry,
 } from "./exifEditor.js";
-import { state } from "./state.js";
+import { state, on, emit } from "./state.js";
 import {
-  registerRemoveHandlers,
-  registerPresetHandlers,
-  renderEntries,
-  renderImages,
-  renderPresetGroups,
-  renderPresetValues,
+  initUI,
   updateApplyStatus,
   updatePresetStatus,
   updateUploadStatus,
@@ -79,17 +74,83 @@ document.addEventListener("DOMContentLoaded", () => {
   populateTagSelect(presetGroupTag);
 
   initPresetStore();
+  initUI();
 
-  registerRemoveHandlers({
-    image: removeImage,
-    entry: (entryId) => {
-      removeEntry(entryId);
-      renderEntries();
-    },
+  // --- Action event handlers ---
+
+  on("action:removeImage", (imageId) => removeImage(imageId));
+
+  on("action:removeEntry", (entryId) => removeEntry(entryId));
+
+  on("action:removePresetGroup", (groupId) => {
+    removePresetGroup(groupId);
+    updatePresetStatus("Group removed.", "warning");
   });
 
+  on("action:applyPresetValue", ({ groupId, valueId }) => {
+    const payload = getPresetValue(groupId, valueId);
+    if (!payload) {
+      updatePresetStatus("Could not find that preset value.", "error");
+      return;
+    }
+    const { group, value } = payload;
+    setEntry(group.target.ifd, group.target.key, value.value, group.target.label);
+    updatePresetStatus(
+      `Applied ${group.name} preset to ${group.target.label || "tag"}.`,
+      "success"
+    );
+    updateApplyStatus(
+      "Preset applied. Click Apply EXIF to write it to your images.",
+      "success"
+    );
+  });
+
+  on("action:removePresetValue", ({ groupId, valueId }) => {
+    removePresetValue(groupId, valueId);
+    updatePresetStatus("Value removed from the group.", "warning");
+  });
+
+  // --- Tab & step navigation ---
+
+  document.querySelectorAll(".tab").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.activeTab = btn.dataset.tab;
+      emit("tab");
+    });
+  });
+
+  document.getElementById("step1Next")?.addEventListener("click", () => {
+    if (state.images.length > 0) { state.currentStep = 2; emit("step"); }
+  });
+  document.getElementById("step2Prev")?.addEventListener("click", () => {
+    state.currentStep = 1; emit("step");
+  });
+  document.getElementById("step2Next")?.addEventListener("click", () => {
+    if (state.entries.length > 0) { state.currentStep = 3; emit("step"); }
+  });
+  document.getElementById("step3Prev")?.addEventListener("click", () => {
+    state.currentStep = 2; emit("step");
+  });
+
+  on("action:goToStep", (step) => {
+    state.currentStep = step;
+    emit("step");
+  });
+
+  // --- DOM event listeners ---
+
+  async function loadFiles(fileList) {
+    showLoading("Loading images...");
+    try {
+      const result = await handleFiles(fileList);
+      updateUploadStatus(result.message, result.tone);
+    } finally {
+      hideLoading();
+    }
+  }
+
   fileInput.addEventListener("change", (event) => {
-    handleFiles(event.target.files);
+    loadFiles(event.target.files);
     fileInput.value = "";
   });
 
@@ -125,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
       dragDepth = 0;
       const files = event.dataTransfer?.files;
       if (files && files.length) {
-        handleFiles(files);
+        loadFiles(files);
       }
     });
   }
@@ -140,7 +201,6 @@ document.addEventListener("DOMContentLoaded", () => {
         tagValue.value,
         selectedTag.dataset.label
       );
-      renderEntries();
       entryForm.reset();
       updateApplyStatus(
         "EXIF entry added. Click Apply EXIF to write it to your images.",
@@ -153,7 +213,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   clearEntriesBtn.addEventListener("click", () => {
     clearEntries();
-    renderEntries();
     updateApplyStatus("All EXIF entries cleared.", "warning");
   });
 
@@ -161,7 +220,6 @@ document.addEventListener("DOMContentLoaded", () => {
     showLoading("Applying EXIF to images...");
     try {
       const result = applyExifToImages();
-      renderImages();
       const tone = result.success ? "success" : "error";
       updateApplyStatus(result.message, tone);
     } finally {
@@ -201,8 +259,6 @@ document.addEventListener("DOMContentLoaded", () => {
         label: selectedTag.dataset.label,
       });
       presetGroupForm.reset();
-      renderPresetGroups();
-      renderPresetValues();
       updatePresetStatus("Group added.", "success");
     } catch (error) {
       updatePresetStatus(error.message, "error");
@@ -211,8 +267,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   presetGroupSelector.addEventListener("change", (event) => {
     setActivePresetGroup(event.target.value);
-    renderPresetGroups();
-    renderPresetValues();
   });
 
   presetValueForm.addEventListener("submit", (event) => {
@@ -225,8 +279,6 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       addPresetValue(activeGroup.id, presetValueInput.value);
       presetValueForm.reset();
-      renderPresetValues();
-      renderPresetGroups();
       updatePresetStatus("Value added to the group.", "success");
     } catch (error) {
       updatePresetStatus(error.message, "error");
@@ -252,8 +304,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!file) return;
     try {
       await importPresetFile(file);
-      renderPresetGroups();
-      renderPresetValues();
       updatePresetStatus(`Imported presets from ${file.name}.`, "success");
     } catch (error) {
       updatePresetStatus(`Import failed: ${error.message}`, "error");
@@ -261,42 +311,4 @@ document.addEventListener("DOMContentLoaded", () => {
       importPresetsInput.value = "";
     }
   });
-
-  registerPresetHandlers({
-    removeGroup: (groupId) => {
-      removePresetGroup(groupId);
-      renderPresetGroups();
-      renderPresetValues();
-      updatePresetStatus("Group removed.", "warning");
-    },
-    applyValue: (groupId, valueId) => {
-      const payload = getPresetValue(groupId, valueId);
-      if (!payload) {
-        updatePresetStatus("Could not find that preset value.", "error");
-        return;
-      }
-      const { group, value } = payload;
-      setEntry(group.target.ifd, group.target.key, value.value, group.target.label);
-      renderEntries();
-      updatePresetStatus(
-        `Applied ${group.name} preset to ${group.target.label || "tag"}.`,
-        "success"
-      );
-      updateApplyStatus(
-        "Preset applied. Click Apply EXIF to write it to your images.",
-        "success"
-      );
-    },
-    removeValue: (groupId, valueId) => {
-      removePresetValue(groupId, valueId);
-      renderPresetValues();
-      updatePresetStatus("Value removed from the group.", "warning");
-    },
-  });
-
-  // Initial render
-  renderPresetGroups();
-  renderPresetValues();
-  renderEntries();
-  renderImages();
 });
