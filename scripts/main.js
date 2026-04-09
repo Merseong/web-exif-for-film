@@ -11,6 +11,7 @@ import {
 import { state, on, emit } from "./state.js";
 import {
   initUI,
+  rerenderAll,
   renderPresetCards,
   updateApplyStatus,
   updatePresetStatus,
@@ -22,6 +23,7 @@ import {
   getMergeSelections,
   getMergeIncoming,
 } from "./ui.js";
+import { initI18n, setLang, getLang, t } from "./i18n.js";
 import {
   addPresetGroup,
   addPresetValue,
@@ -87,6 +89,17 @@ document.addEventListener("DOMContentLoaded", () => {
   populateTagSelect(tagSelect);
   populateTagSelect(presetGroupTag);
 
+  initI18n();
+
+  const langSelect = document.getElementById("langSelect");
+  if (langSelect) {
+    langSelect.value = getLang();
+    langSelect.addEventListener("change", () => {
+      setLang(langSelect.value);
+      rerenderAll();
+    });
+  }
+
   initPresetStore();
   initUI();
 
@@ -106,30 +119,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   on("action:removePresetGroup", (groupId) => {
     removePresetGroup(groupId);
-    updatePresetStatus("Group removed.", "warning");
+    updatePresetStatus(t("status.groupRemoved"), "warning");
   });
 
   on("action:applyPresetValue", ({ groupId, valueId }) => {
     const payload = getPresetValue(groupId, valueId);
     if (!payload) {
-      updatePresetStatus("Could not find that preset value.", "error");
+      updatePresetStatus(t("status.presetNotFound"), "error");
       return;
     }
     const { group, value } = payload;
     setEntry(group.target.ifd, group.target.key, value.value, group.target.label);
     updatePresetStatus(
-      `Applied ${group.name} preset to ${group.target.label || "tag"}.`,
+      t("status.presetApplied", { group: group.name, tag: group.target.label || "tag" }),
       "success"
     );
     updateApplyStatus(
-      "Preset applied. Click Apply EXIF to write it to your images.",
+      t("status.presetAppliedHint"),
       "success"
     );
   });
 
   on("action:removePresetValue", ({ groupId, valueId }) => {
     removePresetValue(groupId, valueId);
-    updatePresetStatus("Value removed from the group.", "warning");
+    updatePresetStatus(t("status.valueRemoved"), "warning");
   });
 
   on("action:setActiveGroup", (groupId) => {
@@ -153,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("clearImages")?.addEventListener("click", () => {
     state.images = [];
     emit("images");
-    updateUploadStatus("모든 이미지가 삭제되었습니다.", "warning");
+    updateUploadStatus(t("status.imageCleared"), "warning");
   });
 
   document.getElementById("step1Next")?.addEventListener("click", () => {
@@ -177,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- DOM event listeners ---
 
   async function loadFiles(fileList) {
-    showLoading("Loading images...");
+    showLoading(t("status.loadingImages"));
     try {
       const result = await handleFiles(fileList);
       updateUploadStatus(result.message, result.tone);
@@ -240,7 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       entryForm.reset();
       updateApplyStatus(
-        "EXIF entry added. Click Apply EXIF to write it to your images.",
+        t("status.entryAdded"),
         ""
       );
     } catch (error) {
@@ -250,11 +263,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   clearEntriesBtn?.addEventListener("click", () => {
     clearEntries();
-    updateApplyStatus("All EXIF entries cleared.", "warning");
+    updateApplyStatus(t("status.entriesCleared"), "warning");
   });
 
   applyButton.addEventListener("click", () => {
-    showLoading("Applying EXIF to images...");
+    showLoading(t("status.applyingExif"));
     try {
       const result = applyExifToImages();
       const tone = result.success ? "success" : "error";
@@ -266,7 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   downloadAllButton.addEventListener("click", async () => {
     if (state.images.length === 0) {
-      updateApplyStatus("No images to download. Upload and apply EXIF first.", "warning");
+      updateApplyStatus(t("status.noDownload"), "warning");
       return;
     }
 
@@ -278,16 +291,16 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      updateApplyStatus("Download started.", "success");
+      updateApplyStatus(t("status.downloadStarted"), "success");
       return;
     }
 
     if (typeof JSZip === "undefined") {
-      updateApplyStatus("ZIP library not loaded. Try again shortly.", "error");
+      updateApplyStatus(t("status.zipLoading"), "error");
       return;
     }
 
-    showLoading("ZIP 파일 생성 중...");
+    showLoading(t("status.zipCreating"));
     try {
       const zip = new JSZip();
       state.images.forEach((image) => {
@@ -304,11 +317,11 @@ document.addEventListener("DOMContentLoaded", () => {
       link.remove();
       URL.revokeObjectURL(url);
       updateApplyStatus(
-        `${state.images.length}장을 ZIP으로 다운로드합니다.`,
+        t("status.zipDownload", { count: state.images.length }),
         "success"
       );
     } catch (error) {
-      updateApplyStatus(`ZIP 생성 실패: ${error.message}`, "error");
+      updateApplyStatus(t("status.zipFailed", { error: error.message }), "error");
     } finally {
       hideLoading();
     }
@@ -325,7 +338,7 @@ document.addEventListener("DOMContentLoaded", () => {
         label: selectedTag.dataset.label,
       });
       presetGroupForm.reset();
-      updatePresetStatus("Group added.", "success");
+      updatePresetStatus(t("status.groupAdded"), "success");
     } catch (error) {
       updatePresetStatus(error.message, "error");
     }
@@ -339,28 +352,28 @@ document.addEventListener("DOMContentLoaded", () => {
     event.preventDefault();
     const activeGroup = getActivePresetGroup();
     if (!activeGroup) {
-      updatePresetStatus("Create a group before adding values.", "warning");
+      updatePresetStatus(t("status.createGroupFirst"), "warning");
       return;
     }
     try {
       addPresetValue(activeGroup.id, presetValueInput.value);
       presetValueForm.reset();
-      updatePresetStatus("Value added to the group.", "success");
+      updatePresetStatus(t("status.valueAdded"), "success");
     } catch (error) {
       updatePresetStatus(error.message, "error");
     }
   });
 
   document.getElementById("hardClearPresets")?.addEventListener("click", () => {
-    if (!confirm("모든 프리셋을 삭제합니다. 계속하시겠습니까?")) return;
+    if (!confirm(t("confirm.hardClear"))) return;
     hardClearPresets();
-    updatePresetStatus("모든 프리셋이 삭제되었습니다.", "warning");
+    updatePresetStatus(t("status.hardCleared"), "warning");
   });
 
   document.getElementById("resetPresets")?.addEventListener("click", () => {
-    if (!confirm("기본 프리셋으로 복원합니다. 현재 프리셋은 사라집니다. 계속하시겠습니까?")) return;
+    if (!confirm(t("confirm.resetDefault"))) return;
     resetPresetsToDefault();
-    updatePresetStatus("기본 프리셋으로 복원되었습니다.", "success");
+    updatePresetStatus(t("status.resetDone"), "success");
   });
 
   document.getElementById("mergeDefaultPresets")?.addEventListener("click", () => {
@@ -379,7 +392,7 @@ document.addEventListener("DOMContentLoaded", () => {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
-    updatePresetStatus("Preset JSON exported.", "success");
+    updatePresetStatus(t("status.exported"), "success");
   });
 
   importPresetsInput.addEventListener("change", async (event) => {
@@ -387,9 +400,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!file) return;
     try {
       await importPresetFile(file);
-      updatePresetStatus(`Imported presets from ${file.name}.`, "success");
+      updatePresetStatus(t("status.imported", { file: file.name }), "success");
     } catch (error) {
-      updatePresetStatus(`Import failed: ${error.message}`, "error");
+      updatePresetStatus(t("status.importFailed", { error: error.message }), "error");
     } finally {
       importPresetsInput.value = "";
     }
@@ -408,7 +421,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const normalized = normalizePresets(parsed);
       showMergeModal(normalized);
     } catch (error) {
-      updatePresetStatus(`Merge 파일 로드 실패: ${error.message}`, "error");
+      updatePresetStatus(t("status.mergeFailed", { error: error.message }), "error");
     } finally {
       mergePresetsInput.value = "";
     }
@@ -420,7 +433,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!incoming || selections.length === 0) return;
     mergePresets(incoming, selections);
     hideMergeModal();
-    updatePresetStatus("프리셋이 병합되었습니다.", "success");
+    updatePresetStatus(t("status.merged"), "success");
   });
 
   document.getElementById("mergeCancel")?.addEventListener("click", hideMergeModal);

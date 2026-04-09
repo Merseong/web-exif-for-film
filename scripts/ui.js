@@ -1,5 +1,6 @@
 import { state, on, emit } from "./state.js";
 import { TAG_LABELS } from "./exifEditor.js";
+import { t } from "./i18n.js";
 
 const uploadStatusEl = document.getElementById("uploadStatus");
 const applyStatusEl = document.getElementById("applyStatus");
@@ -38,7 +39,9 @@ const step2PrevBtn = document.getElementById("step2Prev");
 const step2NextBtn = document.getElementById("step2Next");
 const step3PrevBtn = document.getElementById("step3Prev");
 
-const STEP_LABELS = ["업로드", "EXIF 설정", "적용 & 다운로드"];
+function getStepLabels() {
+  return [t("step.upload"), t("step.exif"), t("step.apply")];
+}
 
 function setStatus(el, message, tone) {
   el.className = "status";
@@ -145,7 +148,7 @@ export function showImageDetail(image) {
     if (entries.length === 0) {
       const empty = document.createElement("li");
       empty.className = "muted";
-      empty.textContent = "No EXIF entries found.";
+      empty.textContent = t("empty.noExif");
       detailListEl.appendChild(empty);
     } else {
       entries.forEach((entry) => {
@@ -234,14 +237,14 @@ export function renderPresetCards(filter = "") {
 
     if (lowerFilter && matchingValues.length === 0) {
       section.classList.add("preset-card-group--dim");
-      label.textContent = `${group.name} — 일치하는 값 없음`;
+      label.textContent = `${group.name} — ${t("empty.noMatch")}`;
       section.appendChild(label);
       presetCardGroups.appendChild(section);
       return;
     }
 
     if (lowerFilter && matchingValues.length < group.values.length) {
-      label.textContent = `${group.name} — ${group.values.length}개 중 ${matchingValues.length}개 표시`;
+      label.textContent = `${group.name} — ${t("count.filtered", { total: group.values.length, match: matchingValues.length })}`;
     } else {
       label.textContent = group.name;
     }
@@ -289,14 +292,14 @@ export function renderEntryChips() {
   if (state.entries.length === 0) {
     const empty = document.createElement("span");
     empty.className = "muted";
-    empty.textContent = "설정된 EXIF 엔트리가 없습니다.";
+    empty.textContent = t("empty.noEntries");
     entryChips.appendChild(empty);
     return;
   }
 
   const label = document.createElement("span");
   label.className = "muted";
-  label.textContent = `설정된 EXIF 엔트리 (${state.entries.length})`;
+  label.textContent = t("count.entriesLabel", { count: state.entries.length });
   entryChips.appendChild(label);
 
   state.entries.forEach((entry) => {
@@ -330,10 +333,10 @@ export function renderApplySummary() {
     imageCard.className = "apply-summary__card";
     const imageLabel = document.createElement("p");
     imageLabel.className = "apply-summary__label";
-    imageLabel.textContent = "Images";
+    imageLabel.textContent = t("summary.images");
     const imageValue = document.createElement("p");
     imageValue.className = "apply-summary__value";
-    imageValue.textContent = state.images.length;
+    imageValue.textContent = state.images.length + t("unit.images");
     imageCard.appendChild(imageLabel);
     imageCard.appendChild(imageValue);
 
@@ -341,10 +344,10 @@ export function renderApplySummary() {
     entryCard.className = "apply-summary__card";
     const entryLabel = document.createElement("p");
     entryLabel.className = "apply-summary__label";
-    entryLabel.textContent = "EXIF Entries";
+    entryLabel.textContent = t("summary.entries");
     const entryValue = document.createElement("p");
     entryValue.className = "apply-summary__value";
-    entryValue.textContent = state.entries.length;
+    entryValue.textContent = state.entries.length + t("unit.entries");
     entryCard.appendChild(entryLabel);
     entryCard.appendChild(entryValue);
 
@@ -380,7 +383,7 @@ export function renderEntries() {
   if (state.entries.length === 0) {
     const empty = document.createElement("li");
     empty.className = "muted";
-    empty.textContent = "No EXIF entries yet.";
+    empty.textContent = t("empty.noEntriesYet");
     entryItemsEl.appendChild(empty);
     return;
   }
@@ -403,7 +406,7 @@ export function renderEntries() {
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
     removeBtn.className = "button button--ghost";
-    removeBtn.textContent = "Remove";
+    removeBtn.textContent = t("action.remove");
     removeBtn.addEventListener("click", () => {
       emit("action:removeEntry", entry.id);
     });
@@ -419,7 +422,7 @@ export function renderImages() {
   if (state.images.length === 0) {
     const empty = document.createElement("p");
     empty.className = "muted";
-    empty.textContent = "No images loaded yet.";
+    empty.textContent = t("empty.noImages");
     imageListEl.appendChild(empty);
     return;
   }
@@ -451,12 +454,12 @@ export function renderImages() {
     download.href = image.dataUrl;
     download.download = `exif-${image.name}`;
     download.className = "button button--secondary";
-    download.textContent = "Download";
+    download.textContent = t("action.download");
 
     const remove = document.createElement("button");
     remove.type = "button";
     remove.className = "button button--ghost";
-    remove.textContent = "Remove from list";
+    remove.textContent = t("action.removeFromList");
     remove.addEventListener("click", () => emit("action:removeImage", image.id));
 
     actions.appendChild(remove);
@@ -488,11 +491,11 @@ export function renderPresetGroups() {
   if (!state.presets.groups.length) {
     const empty = document.createElement("li");
     empty.className = "muted";
-    empty.textContent = "Add a group to start building presets.";
+    empty.textContent = t("empty.noGroups");
     presetGroupListEl.appendChild(empty);
 
     const placeholder = document.createElement("option");
-    placeholder.textContent = "No groups yet";
+    placeholder.textContent = t("empty.noGroupsOption");
     placeholder.value = "";
     presetGroupSelectEl.appendChild(placeholder);
     presetGroupSelectEl.disabled = true;
@@ -560,7 +563,7 @@ export function renderPresetGroups() {
     const editBtn = document.createElement("button");
     editBtn.type = "button";
     editBtn.className = "preset-item__btn";
-    editBtn.textContent = "편집";
+    editBtn.textContent = t("action.edit");
     editBtn.addEventListener("click", () => {
       const input = document.createElement("input");
       input.type = "text";
@@ -585,7 +588,7 @@ export function renderPresetGroups() {
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
     removeBtn.className = "preset-item__btn preset-item__btn--danger";
-    removeBtn.textContent = "\uC0AD\uC81C";
+    removeBtn.textContent = t("action.remove");
     removeBtn.addEventListener("click", () => emit("action:removePresetGroup", group.id));
 
     actions.appendChild(upBtn);
@@ -611,7 +614,7 @@ export function renderPresetValues() {
   if (!activeGroup) {
     const empty = document.createElement("li");
     empty.className = "muted";
-    empty.textContent = "Select a group to view its values.";
+    empty.textContent = t("empty.selectGroup");
     presetValueListEl.appendChild(empty);
     return;
   }
@@ -619,7 +622,7 @@ export function renderPresetValues() {
   if (activeGroup.values.length === 0) {
     const empty = document.createElement("li");
     empty.className = "muted";
-    empty.textContent = "No saved values yet. Add one below.";
+    empty.textContent = t("empty.noValues");
     presetValueListEl.appendChild(empty);
     return;
   }
@@ -661,7 +664,7 @@ export function renderPresetValues() {
     const editBtn = document.createElement("button");
     editBtn.type = "button";
     editBtn.className = "preset-item__btn";
-    editBtn.textContent = "편집";
+    editBtn.textContent = t("action.edit");
     editBtn.addEventListener("click", () => {
       const input = document.createElement("input");
       input.type = "text";
@@ -690,7 +693,7 @@ export function renderPresetValues() {
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
     removeBtn.className = "preset-item__btn preset-item__btn--danger";
-    removeBtn.textContent = "\uC0AD\uC81C";
+    removeBtn.textContent = t("action.remove");
     removeBtn.addEventListener("click", () =>
       emit("action:removePresetValue", { groupId: activeGroup.id, valueId: value.id })
     );
@@ -763,7 +766,7 @@ export function renderStepper() {
 
     const label = document.createElement("span");
     label.className = "stepper__label";
-    label.textContent = STEP_LABELS[i];
+    label.textContent = getStepLabels()[i];
 
     stepDiv.appendChild(circle);
     stepDiv.appendChild(label);
@@ -815,7 +818,9 @@ function updateMergeSummary() {
       if (!existingGroup && valueSet.size > 0) newGroups++;
     }
   });
-  mergeSummaryEl.textContent = `${totalSelected}개 값 선택됨` + (newGroups > 0 ? ` (새 그룹 ${newGroups}개 포함)` : "");
+  mergeSummaryEl.textContent = totalSelected > 0
+    ? t("count.mergeSelected", { count: totalSelected }) + (newGroups > 0 ? ` (${t("count.mergeNewGroups", { count: newGroups })})` : "")
+    : t("empty.selectedNone");
 }
 
 function renderMergeContent() {
@@ -848,7 +853,7 @@ function renderMergeContent() {
     const tagHex = `0x${srcGroup.target.key.toString(16).padStart(4, "0")}`;
     const badge = document.createElement("span");
     badge.className = existingGroup ? "merge-label merge-label--exists" : "merge-label merge-label--new";
-    badge.textContent = existingGroup ? "이미 존재" : "새 그룹";
+    badge.textContent = existingGroup ? t("merge.existsGroup") : t("merge.newGroup");
 
     header.appendChild(groupCheckbox);
     header.append(` ${srcGroup.name} [${srcGroup.target.ifd} ${tagHex}] `);
@@ -870,7 +875,7 @@ function renderMergeContent() {
 
       const valueBadge = document.createElement("span");
       valueBadge.className = valueNew ? "merge-label merge-label--new" : "merge-label merge-label--exists";
-      valueBadge.textContent = valueNew ? "새 항목" : "이미 존재";
+      valueBadge.textContent = valueNew ? t("merge.newValue") : t("merge.existsValue");
 
       valueCheckbox.addEventListener("change", () => {
         let set = mergeState.selections.get(srcGroup.id);
@@ -970,8 +975,10 @@ export function getMergeIncoming() {
   return mergeState?.incoming || null;
 }
 
+const presetSearchEl = document.getElementById("presetSearch");
+
 export function initUI() {
-  const presetSearchInput = document.getElementById("presetSearch");
+  const presetSearchInput = presetSearchEl;
 
   on("entries", renderEntries);
   on("entries", renderEntryChips);
@@ -1003,4 +1010,17 @@ export function initUI() {
   renderApplySummary();
   renderTabs();
   renderStep();
+}
+
+export function rerenderAll() {
+  renderTabs();
+  renderStep();
+  renderThumbnails();
+  renderPresetCards(presetSearchEl?.value || "");
+  renderEntryChips();
+  renderApplySummary();
+  renderEntries();
+  renderImages();
+  renderPresetGroups();
+  renderPresetValues();
 }
