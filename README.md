@@ -1,38 +1,44 @@
 # web-exif-for-film
 
-EXIF editor for film image
+Browser-only EXIF batch editor for scanned film images.
 
-## Purpose
+Upload JPEGs, configure EXIF tags (manually or via presets), apply them in bulk, and download as ZIP. No server — everything runs client-side.
 
-Add EXIF data for scaned images from film
+## Features
 
-Easier way only for film
+- **3-step wizard** — Upload → EXIF settings → Apply & Download
+- **Preset system** — Film / Camera / FocalLength / Dev groups with one-click apply
+- **Preset management** — Add, rename, reorder, delete groups & values. JSON export/import/merge
+- **ZIP download** — Batch download all edited images as a single ZIP
+- **i18n** — Korean, English, Japanese
+- **Light/Dark theme** — System preference or manual toggle
+
+## Getting Started
+
+No build step. Serve with any static server:
+
+```bash
+python3 -m http.server 8000
+```
+
+Open `http://localhost:8000` in a browser.
 
 ## Progress
 
-- [x] EXIF editing only on browser
-- [x] preset film / camera -> EXIF for local
-- [x] export / import settings of film, camera, matching pair -> save on local storage
-- [] exif reader -> what film is it?
-- [] PWA setting
-- [] CD setting
+- [x] EXIF editing on browser (piexifjs)
+- [x] Preset system with localStorage persistence
+- [x] Export / Import / Merge presets (JSON)
+- [x] ZIP batch download (JSZip)
+- [x] i18n (ko / en / ja)
+- [x] Light / Dark / System theme
+- [ ] PWA setting
+- [ ] CD setting
 
-# Presets
+## License
 
-- Presets are stored in `localStorage` and can be exported/imported as JSON from the UI.
-- Groups map to a single EXIF tag; selecting a value writes that tag into the pending EXIF entries.
-- Default configuration: `Film` group mapped to `Model (0x0110)` with the following values:
-  - `kodak_ultramax_400`
-  - `kodak_gold_200`
-  - `kodak_ektar_100`
-  - `kodak_portra_160`
-  - `harman_phoenix_200`
-  - `cinestill_800T`
-  - `cinestill_400D`
-  - `kodak_ektarchrome_e100d`
-  - `kodak_ektarchrome_e100`
-  - `kentmere_pan_100`
+[MIT](LICENSE)
 
-# References
+## References
 
-[exiftool.org](https://exiftool.org/TagNames/EXIF.html)
+- [exiftool.org — EXIF Tag Names](https://exiftool.org/TagNames/EXIF.html)
+- [piexifjs](https://github.com/nicklasaven/piexif.js)
