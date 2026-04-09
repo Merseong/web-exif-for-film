@@ -573,3 +573,591 @@ select {
     width: 100%;
   }
 }
+
+/* ========== Tabs ========== */
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  gap: 0;
+}
+
+.tab {
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease;
+  font-family: inherit;
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tab--active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+.tab-content--hidden {
+  display: none;
+}
+
+/* ========== Stepper ========== */
+
+.stepper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  padding: 24px 0 8px;
+}
+
+.stepper__step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stepper__circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--surface);
+  border: 2px solid var(--border);
+  transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
+  flex-shrink: 0;
+}
+
+.stepper__circle--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.stepper__circle--done {
+  background: var(--success);
+  border-color: var(--success);
+  color: #fff;
+}
+
+.stepper__label {
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.stepper__line {
+  width: 48px;
+  height: 2px;
+  background: var(--border);
+  margin: 0 8px;
+  flex-shrink: 0;
+}
+
+/* ========== Steps ========== */
+
+.step--hidden {
+  display: none;
+}
+
+.step__body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.step__nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+}
+
+.step__divider {
+  border-top: 1px dashed var(--border);
+  margin: 4px 0;
+}
+
+/* ========== Thumbnail Grid ========== */
+
+.thumbnail-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.thumbnail {
+  width: 80px;
+  height: 60px;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.thumbnail__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.thumbnail__remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  appearance: none;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: #fff;
+  font-size: 12px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  padding: 0;
+}
+
+.thumbnail__name {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 9px;
+  padding: 2px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ========== Preset Card Groups (Step 2 Quick-Pick) ========== */
+
+.preset-card-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.preset-card-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.preset-card-group--dim {
+  opacity: 0.5;
+}
+
+.preset-card-group__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.preset-card-group__cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.preset-card {
+  appearance: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+  font-family: inherit;
+}
+
+.preset-card:hover {
+  border-color: var(--accent);
+}
+
+.preset-card--selected {
+  border-color: var(--accent);
+  background: rgba(124, 58, 237, 0.12);
+}
+
+/* ========== Preset Search ========== */
+
+.preset-search input {
+  width: 100%;
+}
+
+/* ========== Section Label ========== */
+
+.section-label {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* ========== Entry Chips ========== */
+
+.entry-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  min-height: 48px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.entry-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.entry-chip__remove {
+  appearance: none;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+}
+
+.entry-chip__remove:hover {
+  color: var(--danger);
+}
+
+/* ========== Apply Summary (Step 3) ========== */
+
+.apply-summary {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.apply-summary__card {
+  flex: 1;
+  min-width: 120px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.apply-summary__label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+
+.apply-summary__value {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* ========== Apply Entry List (Step 3) ========== */
+
+.apply-entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.apply-entry-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 14px;
+}
+
+/* ========== Apply Actions ========== */
+
+.apply-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.apply-actions .button {
+  flex: 1;
+  justify-content: center;
+}
+
+/* ========== Preset Management Header ========== */
+
+.preset-mgmt__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.preset-mgmt__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ========== Button Accent Variant ========== */
+
+.button--accent {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ========== Preset Item Actions ========== */
+
+.preset-item__actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.preset-item__btn {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease;
+  font-family: inherit;
+}
+
+.preset-item__btn:hover {
+  color: var(--text);
+  border-color: var(--text);
+}
+
+.preset-item__btn--danger {
+  color: var(--danger);
+}
+
+.preset-item__btn--danger:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.preset-item__edit-input {
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 4px 8px;
+  font-size: 14px;
+}
+
+/* ========== Modal Overlay ========== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+  z-index: 997;
+  padding: 16px;
+}
+
+.modal-overlay--visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: min(640px, 100%);
+  max-height: 80vh;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal__header h2 {
+  margin: 0;
+}
+
+.modal__body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal__footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ========== Merge Groups (Modal Content) ========== */
+
+.merge-group {
+  margin-bottom: 16px;
+}
+
+.merge-group__header {
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.merge-group__values {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 12px;
+}
+
+.merge-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.merge-label {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.merge-label--new {
+  background: rgba(22, 163, 106, 0.15);
+  color: var(--success);
+}
+
+.merge-label--exists {
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--muted);
+}
+
+/* ========== Responsive Overrides (new elements) ========== */
+
+@media (max-width: 680px) {
+  .tabs {
+    overflow-x: auto;
+  }
+
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 12px 12px;
+  }
+
+  .stepper__label {
+    display: none;
+  }
+
+  .stepper__line {
+    width: 24px;
+  }
+
+  .step__nav {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .step__nav .button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .thumbnail-grid {
+    justify-content: center;
+  }
+
+  .apply-actions {
+    flex-direction: column;
+  }
+
+  .preset-mgmt__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .preset-mgmt__actions {
+    width: 100%;
+  }
+
+  .preset-mgmt__actions .button {
+    flex: 1;
+    text-align: center;
+  }
+
+  .modal {
+    width: 100%;
+  }
+
+  .apply-summary {
+    flex-direction: column;
+  }
+}
