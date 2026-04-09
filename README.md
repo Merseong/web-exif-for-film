@@ -32,7 +32,7 @@ Open `http://localhost:8000` in a browser.
 - [x] i18n (ko / en / ja)
 - [x] Light / Dark / System theme
 - [ ] EXIF viewer / extractor
-- [ ] PWA setting
+- [x] PWA setting (manifest + service worker, icons TBD)
 - [ ] CD setting
 
 ## License
