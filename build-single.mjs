@@ -112,6 +112,14 @@ const MODULES = [
     ],
   },
   {
+    id: "version",
+    file: "scripts/version.js",
+    imports: {
+      "t": "i18n.t",
+    },
+    exports: ["CURRENT_VERSION", "initVersionCheck"],
+  },
+  {
     id: "main",
     file: "scripts/main.js",
     imports: {
@@ -162,6 +170,7 @@ const MODULES = [
       "setLang": "i18n.setLang",
       "getLang": "i18n.getLang",
       "t": "i18n.t",
+      "initVersionCheck": "version.initVersionCheck",
     },
     exports: [],
   },

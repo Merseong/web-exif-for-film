@@ -143,6 +143,11 @@ const translations = {
     "theme.system": "시스템 기본",
     "theme.dark": "다크",
     "theme.light": "라이트",
+
+    // Update
+    "update.available": "{version} 업데이트가 있습니다",
+    "update.download": "다운로드",
+    "update.newVersion": "→ {version} 새 버전",
   },
 
   en: {
@@ -271,6 +276,10 @@ const translations = {
     "theme.system": "System",
     "theme.dark": "Dark",
     "theme.light": "Light",
+
+    "update.available": "{version} update available",
+    "update.download": "Download",
+    "update.newVersion": "→ {version} new version",
   },
 
   ja: {
@@ -399,15 +408,29 @@ const translations = {
     "theme.system": "システム",
     "theme.dark": "ダーク",
     "theme.light": "ライト",
+
+    "update.available": "{version}のアップデートがあります",
+    "update.download": "ダウンロード",
+    "update.newVersion": "→ {version} 新バージョン",
   },
 };
 
 let currentLang = "ko";
 
+function detectBrowserLang() {
+  const browserLang = (navigator.language || "").toLowerCase();
+  if (browserLang.startsWith("ja")) return "ja";
+  if (browserLang.startsWith("en")) return "en";
+  if (browserLang.startsWith("ko")) return "ko";
+  return "en";
+}
+
 export function initI18n() {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved && translations[saved]) {
     currentLang = saved;
+  } else {
+    currentLang = detectBrowserLang();
   }
   applyI18n();
 }

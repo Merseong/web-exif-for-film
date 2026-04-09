@@ -1,4 +1,5 @@
 import { handleFiles, removeImage } from "./fileHandler.js";
+import { initVersionCheck } from "./version.js";
 import {
   COMMON_IFD0_TAGS,
   COMMON_EXIF_TAGS,
@@ -116,6 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initPresetStore();
   initUI();
+  initVersionCheck();
 
   // --- Preset search ---
   const presetSearchInput = document.getElementById("presetSearch");

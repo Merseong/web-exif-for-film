@@ -42,6 +42,12 @@
       </div>
     </header>
 
+    <div id="updateBanner" class="update-banner update-banner--hidden">
+      <span id="updateMessage"></span>
+      <a id="updateLink" href="#" target="_blank" rel="noopener noreferrer" data-i18n="update.download">Download</a>
+      <button id="updateDismiss" class="update-banner__close" type="button">✕</button>
+    </div>
+
     <main class="layout">
       <!-- Tab Navigation -->
       <nav class="tabs">
@@ -287,6 +293,9 @@
       <span>MIT License</span>
       <span class="footer__sep">·</span>
       <span>© 2026 Merseong</span>
+      <span class="footer__sep">·</span>
+      <span id="footerVersion"></span>
+      <span id="footerUpdate"></span>
     </footer>
 
     <!-- Loading Overlay -->
