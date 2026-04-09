@@ -12,8 +12,15 @@
   <body>
     <header class="hero">
       <div class="hero__content">
-        <h1 class="hero__title">EXIF Batch Editor</h1>
-        <p class="hero__subtitle">
+        <div class="hero__top">
+          <h1 class="hero__title" data-i18n="hero.title">EXIF Batch Editor</h1>
+          <select id="langSelect" class="lang-select">
+            <option value="ko">한국어</option>
+            <option value="en">English</option>
+            <option value="ja">日本語</option>
+          </select>
+        </div>
+        <p class="hero__subtitle" data-i18n="hero.subtitle">
           Upload JPEG files, configure EXIF tags, and apply them in bulk.
           Everything runs in the browser.
         </p>
@@ -23,8 +30,8 @@
     <main class="layout">
       <!-- Tab Navigation -->
       <nav class="tabs">
-        <button class="tab tab--active" data-tab="apply">EXIF 적용</button>
-        <button class="tab" data-tab="presets">프리셋 관리</button>
+        <button class="tab tab--active" data-tab="apply" data-i18n="tab.apply">EXIF 적용</button>
+        <button class="tab" data-tab="presets" data-i18n="tab.presets">프리셋 관리</button>
       </nav>
 
       <!-- ==================== EXIF Apply Tab ==================== -->
@@ -38,17 +45,17 @@
             <section class="panel">
               <div class="panel__header">
                 <div>
-                  <p class="eyebrow">Step 1</p>
-                  <h2>Upload images</h2>
-                  <p class="muted">Select the JPEG files you want to edit.</p>
+                  <p class="eyebrow" data-i18n="step1.eyebrow">Step 1</p>
+                  <h2 data-i18n="step1.title">Upload images</h2>
+                  <p class="muted" data-i18n="step1.desc">Select the JPEG files you want to edit.</p>
                 </div>
-                <label class="button button--secondary" for="fileInput">Choose images</label>
+                <label class="button button--secondary" for="fileInput" data-i18n="step1.choose">Choose images</label>
                 <input id="fileInput" type="file" accept="image/jpeg" multiple hidden />
               </div>
               <div class="panel__body panel__body--column">
                 <div id="dropZone" class="dropzone">
-                  <p class="dropzone__title">Drag & drop JPEGs here</p>
-                  <p class="dropzone__subtitle">or click to browse</p>
+                  <p class="dropzone__title" data-i18n="step1.dropTitle">Drag & drop JPEGs here</p>
+                  <p class="dropzone__subtitle" data-i18n="step1.dropSubtitle">or click to browse</p>
                 </div>
                 <div id="uploadStatus" class="status"></div>
                 <div id="thumbnailGrid" class="thumbnail-grid"></div>
@@ -56,8 +63,8 @@
             </section>
           </div>
           <div class="step__nav">
-            <button id="clearImages" class="button button--ghost" type="button">전체 삭제</button>
-            <button id="step1Next" class="button button--secondary step__next" disabled>다음 &rarr;</button>
+            <button id="clearImages" class="button button--ghost" type="button" data-i18n="step1.clear">전체 삭제</button>
+            <button id="step1Next" class="button button--secondary step__next" disabled data-i18n="btn.next">다음 →</button>
           </div>
         </div>
 
@@ -67,9 +74,9 @@
             <!-- Preset Quick-Pick -->
             <section class="panel">
               <div class="panel__body panel__body--column">
-                <p class="section-label">Preset quick-pick</p>
+                <p class="section-label" data-i18n="step2.presetLabel">Preset quick-pick</p>
                 <div class="preset-search">
-                  <input id="presetSearch" type="text" placeholder="Search presets..." />
+                  <input id="presetSearch" type="text" data-i18n-placeholder="step2.searchPlaceholder" placeholder="Search presets..." />
                 </div>
                 <div id="presetCardGroups" class="preset-card-groups"></div>
               </div>
@@ -80,23 +87,24 @@
             <!-- Manual Tag Form -->
             <section class="panel">
               <div class="panel__body panel__body--column">
-                <p class="section-label">Manual tag entry</p>
+                <p class="section-label" data-i18n="step2.manualLabel">Manual tag entry</p>
                 <form id="entryForm" class="entry-form">
                   <label class="field">
-                    <span class="field__label">Tag (IFD0 or ExifIFD)</span>
+                    <span class="field__label" data-i18n="step2.tagLabel">Tag (IFD0 or ExifIFD)</span>
                     <select id="tagSelect" required></select>
                   </label>
                   <label class="field">
-                    <span class="field__label">Value</span>
+                    <span class="field__label" data-i18n="step2.valueLabel">Value</span>
                     <input
                       id="tagValue"
                       type="text"
+                      data-i18n-placeholder="step2.valuePlaceholder"
                       placeholder="e.g., Olympus mju"
                       autocomplete="off"
                       required
                     />
                   </label>
-                  <button class="button" type="submit">Add</button>
+                  <button class="button" type="submit" data-i18n="step2.add">Add</button>
                 </form>
               </div>
             </section>
@@ -106,14 +114,14 @@
             <!-- Entry Chips -->
             <section class="panel">
               <div class="panel__body panel__body--column">
-                <p class="section-label">Pending EXIF entries</p>
+                <p class="section-label" data-i18n="step2.pendingLabel">Pending EXIF entries</p>
                 <div id="entryChips" class="entry-chips"></div>
               </div>
             </section>
           </div>
           <div class="step__nav">
-            <button id="step2Prev" class="button button--ghost step__prev">&larr; 이전</button>
-            <button id="step2Next" class="button button--secondary step__next">다음 &rarr;</button>
+            <button id="step2Prev" class="button button--ghost step__prev" data-i18n="btn.prev">← 이전</button>
+            <button id="step2Next" class="button button--secondary step__next" data-i18n="btn.next">다음 →</button>
           </div>
         </div>
 
@@ -125,10 +133,8 @@
                 <div id="applySummary" class="apply-summary"></div>
                 <div id="applyEntryList" class="apply-entry-list"></div>
                 <div class="apply-actions">
-                  <button id="applyExif" class="button" type="button">EXIF 적용</button>
-                  <button id="downloadAll" class="button button--secondary" type="button">
-                    전체 다운로드
-                  </button>
+                  <button id="applyExif" class="button" type="button" data-i18n="step3.applyExif">EXIF 적용</button>
+                  <button id="downloadAll" class="button button--secondary" type="button" data-i18n="step3.downloadAll">전체 다운로드</button>
                 </div>
                 <div id="applyStatus" class="status"></div>
                 <div id="imageList" class="image-grid"></div>
@@ -136,7 +142,7 @@
             </section>
           </div>
           <div class="step__nav">
-            <button id="step3Prev" class="button button--ghost step__prev">&larr; 이전</button>
+            <button id="step3Prev" class="button button--ghost step__prev" data-i18n="btn.prev">← 이전</button>
             <span></span>
           </div>
         </div>
@@ -145,15 +151,15 @@
       <!-- ==================== Preset Management Tab ==================== -->
       <div id="tabPresets" class="tab-content tab-content--hidden">
         <div class="preset-mgmt__header">
-          <h2>프리셋 관리</h2>
+          <h2 data-i18n="preset.title">프리셋 관리</h2>
           <div class="preset-mgmt__actions">
-            <button id="hardClearPresets" class="button button--ghost" type="button">전체 비우기</button>
-            <button id="resetPresets" class="button button--ghost" type="button">기본값 복원</button>
-            <button id="mergeDefaultPresets" class="button button--ghost" type="button">기본값 Merge</button>
-            <button id="exportPresets" class="button button--secondary" type="button">Export</button>
-            <label class="button button--secondary" for="importPresetsInput">Import</label>
+            <button id="hardClearPresets" class="button button--ghost" type="button" data-i18n="preset.hardClear">전체 비우기</button>
+            <button id="resetPresets" class="button button--ghost" type="button" data-i18n="preset.resetDefault">기본값 복원</button>
+            <button id="mergeDefaultPresets" class="button button--ghost" type="button" data-i18n="preset.mergeDefault">기본값 Merge</button>
+            <button id="exportPresets" class="button button--secondary" type="button" data-i18n="preset.export">Export</button>
+            <label class="button button--secondary" for="importPresetsInput" data-i18n="preset.import">Import</label>
             <input id="importPresetsInput" type="file" accept="application/json" hidden />
-            <label class="button button--accent" for="mergePresetsInput">Merge</label>
+            <label class="button button--accent" for="mergePresetsInput" data-i18n="preset.merge">Merge</label>
             <input id="mergePresetsInput" type="file" accept="application/json" hidden />
           </div>
         </div>
@@ -161,24 +167,25 @@
         <div class="preset-grid">
           <!-- Groups Column -->
           <div class="preset-column">
-            <h3>Groups</h3>
-            <p class="muted">Name the group and link it to an EXIF tag.</p>
+            <h3 data-i18n="preset.groups">Groups</h3>
+            <p class="muted" data-i18n="preset.groupsDesc">Name the group and link it to an EXIF tag.</p>
             <form id="presetGroupForm" class="entry-form">
               <label class="field">
-                <span class="field__label">Group name</span>
+                <span class="field__label" data-i18n="preset.groupName">Group name</span>
                 <input
                   id="presetGroupName"
                   type="text"
+                  data-i18n-placeholder="preset.groupNamePlaceholder"
                   placeholder="e.g., Film, Camera, Lens"
                   autocomplete="off"
                   required
                 />
               </label>
               <label class="field">
-                <span class="field__label">EXIF tag mapping</span>
+                <span class="field__label" data-i18n="preset.tagMapping">EXIF tag mapping</span>
                 <select id="presetGroupTag" required></select>
               </label>
-              <button class="button" type="submit">Add group</button>
+              <button class="button" type="submit" data-i18n="preset.addGroup">Add group</button>
             </form>
             <ul id="presetGroupList" class="preset-list"></ul>
           </div>
@@ -187,30 +194,30 @@
           <div class="preset-column">
             <div class="preset-column__header">
               <div>
-                <h3>Values</h3>
-                <p class="muted">
+                <h3 data-i18n="preset.values">Values</h3>
+                <p class="muted" data-i18n="preset.valuesDesc">
                   Choose the active group and add film/camera/lens presets.
-                  Applying a value sets the mapped EXIF tag in the pending entries list.
                 </p>
               </div>
               <label class="field">
-                <span class="field__label">Active group</span>
+                <span class="field__label" data-i18n="preset.activeGroup">Active group</span>
                 <select id="activePresetGroup"></select>
               </label>
             </div>
 
             <form id="presetValueForm" class="entry-form">
               <label class="field">
-                <span class="field__label">Value</span>
+                <span class="field__label" data-i18n="step2.valueLabel">Value</span>
                 <input
                   id="presetValueInput"
                   type="text"
+                  data-i18n-placeholder="preset.valuePlaceholder"
                   placeholder="e.g., kodak_ultramax_400"
                   autocomplete="off"
                   required
                 />
               </label>
-              <button class="button" type="submit">Add value</button>
+              <button class="button" type="submit" data-i18n="preset.addValue">Add value</button>
             </form>
             <ul id="presetValueList" class="preset-values"></ul>
           </div>
@@ -224,16 +231,17 @@
     <div id="mergeOverlay" class="modal-overlay">
       <div class="modal">
         <div class="modal__header">
-          <h2>Merge Presets</h2>
-          <button id="mergeClose" class="button button--ghost" type="button">Close</button>
+          <h2 data-i18n="merge.title">Merge Presets</h2>
+          <button id="mergeClose" class="button button--ghost" type="button" data-i18n="merge.close">Close</button>
         </div>
+        <p class="muted" data-i18n="merge.desc">Select groups and values to import.</p>
         <div id="mergeContent" class="modal__body">
           <div id="mergeSummary"></div>
         </div>
         <div class="modal__footer">
           <div class="modal__actions">
-            <button id="mergeCancel" class="button button--ghost" type="button">Cancel</button>
-            <button id="mergeConfirm" class="button" type="button">Confirm merge</button>
+            <button id="mergeCancel" class="button button--ghost" type="button" data-i18n="merge.cancel">Cancel</button>
+            <button id="mergeConfirm" class="button" type="button" data-i18n="merge.confirm">Confirm merge</button>
           </div>
         </div>
       </div>
@@ -243,10 +251,10 @@
     <div id="imageDetailOverlay" class="image-detail">
       <div class="image-detail__dialog">
         <button id="imageDetailClose" class="button button--ghost image-detail__close" type="button">
-          Close
+          <span data-i18n="merge.close">Close</span>
         </button>
         <div class="image-detail__preview">
-          <img id="imageDetailImg" src="" alt="Selected image" />
+          <img id="imageDetailImg" src="" data-i18n-alt="loading.selectedImage" alt="Selected image" />
         </div>
         <div class="image-detail__info">
           <div>
@@ -262,7 +270,7 @@
     <div id="loadingOverlay" class="loading-overlay">
       <div class="loading-overlay__content">
         <div class="spinner"></div>
-        <p id="loadingText" class="loading-overlay__text">Working...</p>
+        <p id="loadingText" class="loading-overlay__text" data-i18n="loading.working">Working...</p>
       </div>
     </div>
   </body>

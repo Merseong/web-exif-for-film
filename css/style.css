@@ -44,6 +44,24 @@ a {
   margin: 0 auto;
 }
 
+.hero__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.lang-select {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
 .hero__eyebrow {
   text-transform: uppercase;
   letter-spacing: 0.2em;
