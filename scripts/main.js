@@ -255,25 +255,54 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  downloadAllButton.addEventListener("click", () => {
+  downloadAllButton.addEventListener("click", async () => {
     if (state.images.length === 0) {
       updateApplyStatus("No images to download. Upload and apply EXIF first.", "warning");
       return;
     }
 
-    state.images.forEach((image) => {
+    if (state.images.length === 1) {
+      const image = state.images[0];
       const link = document.createElement("a");
       link.href = image.dataUrl;
       link.download = `exif-${image.name}`;
       document.body.appendChild(link);
       link.click();
       link.remove();
-    });
+      updateApplyStatus("Download started.", "success");
+      return;
+    }
 
-    updateApplyStatus(
-      `Started download for ${state.images.length} image(s).`,
-      "success"
-    );
+    if (typeof JSZip === "undefined") {
+      updateApplyStatus("ZIP library not loaded. Try again shortly.", "error");
+      return;
+    }
+
+    showLoading("ZIP 파일 생성 중...");
+    try {
+      const zip = new JSZip();
+      state.images.forEach((image) => {
+        const base64 = image.dataUrl.split(",")[1];
+        zip.file(`exif-${image.name}`, base64, { base64: true });
+      });
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `exif-images-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      updateApplyStatus(
+        `${state.images.length}장을 ZIP으로 다운로드합니다.`,
+        "success"
+      );
+    } catch (error) {
+      updateApplyStatus(`ZIP 생성 실패: ${error.message}`, "error");
+    } finally {
+      hideLoading();
+    }
   });
 
   presetGroupForm.addEventListener("submit", (event) => {
