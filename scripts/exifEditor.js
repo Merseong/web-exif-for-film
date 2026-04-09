@@ -1,4 +1,4 @@
-import { state } from "./state.js";
+import { state, emit } from "./state.js";
 
 export const COMMON_IFD0_TAGS = [
   { key: 0x010e, label: "ImageDescription" },
@@ -98,6 +98,7 @@ export function addEntry(ifd, keyInput, valueInput, label = null) {
     value,
     original: valueInput,
   });
+  emit("entries");
 }
 
 export function setEntry(ifd, keyInput, valueInput, label = null) {
@@ -125,15 +126,18 @@ export function setEntry(ifd, keyInput, valueInput, label = null) {
   } else {
     state.entries.push(entry);
   }
+  emit("entries");
   return entry;
 }
 
 export function clearEntries() {
   state.entries = [];
+  emit("entries");
 }
 
 export function removeEntry(entryId) {
   state.entries = state.entries.filter((entry) => entry.id !== entryId);
+  emit("entries");
 }
 
 export function applyExifToImages() {
@@ -151,6 +155,7 @@ export function applyExifToImages() {
       dataUrl: applyEntriesToDataUrl(image.dataUrl, state.entries),
     }));
 
+    emit("images");
     return {
       success: true,
       message: `${state.entries.length} entries applied to ${state.images.length} image(s).`,
