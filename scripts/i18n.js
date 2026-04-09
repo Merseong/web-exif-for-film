@@ -138,6 +138,11 @@ const translations = {
     // Loading
     "loading.working": "처리 중...",
     "loading.selectedImage": "선택된 이미지",
+
+    // Theme
+    "theme.system": "시스템 기본",
+    "theme.dark": "다크",
+    "theme.light": "라이트",
   },
 
   en: {
@@ -262,6 +267,10 @@ const translations = {
 
     "loading.working": "Working...",
     "loading.selectedImage": "Selected image",
+
+    "theme.system": "System",
+    "theme.dark": "Dark",
+    "theme.light": "Light",
   },
 
   ja: {
@@ -386,6 +395,10 @@ const translations = {
 
     "loading.working": "処理中...",
     "loading.selectedImage": "選択された画像",
+
+    "theme.system": "システム",
+    "theme.dark": "ダーク",
+    "theme.light": "ライト",
   },
 };
 
