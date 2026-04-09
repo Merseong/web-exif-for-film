@@ -29,6 +29,10 @@ import {
   removePresetValue,
   setActivePresetGroup,
   exportPresetJson,
+  renameGroup,
+  renameValue,
+  reorderGroup,
+  reorderValue,
 } from "./presets.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -118,6 +122,15 @@ document.addEventListener("DOMContentLoaded", () => {
     removePresetValue(groupId, valueId);
     updatePresetStatus("Value removed from the group.", "warning");
   });
+
+  on("action:setActiveGroup", (groupId) => {
+    setActivePresetGroup(groupId);
+  });
+
+  on("action:renameGroup", ({ groupId, newName }) => renameGroup(groupId, newName));
+  on("action:renameValue", ({ groupId, valueId, newLabel }) => renameValue(groupId, valueId, newLabel));
+  on("action:reorderGroup", ({ groupId, direction }) => reorderGroup(groupId, direction));
+  on("action:reorderValue", ({ groupId, valueId, direction }) => reorderValue(groupId, valueId, direction));
 
   // --- Tab & step navigation ---
 

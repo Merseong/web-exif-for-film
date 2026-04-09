@@ -509,6 +509,13 @@ export function renderPresetGroups() {
       item.classList.add("preset-item--active");
     }
 
+    // Click-to-select: clicking the item (not on a button/input) sets it active
+    item.addEventListener("click", (event) => {
+      if (event.target.closest("button") || event.target.closest("input")) return;
+      emit("action:setActiveGroup", group.id);
+    });
+    item.style.cursor = "pointer";
+
     const text = document.createElement("div");
     text.className = "preset-item__text";
 
@@ -517,21 +524,70 @@ export function renderPresetGroups() {
 
     const meta = document.createElement("p");
     meta.className = "preset-item__meta";
-    meta.textContent = `${group.target.label || "Tag"} • ${
+    meta.textContent = `${group.target.label || "Tag"} \u2022 ${
       group.target.ifd
-    } • 0x${group.target.key.toString(16).padStart(4, "0")}`;
+    } \u2022 0x${group.target.key.toString(16).padStart(4, "0")}`;
 
     text.appendChild(name);
     text.appendChild(meta);
 
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.className = "button button--ghost";
-    remove.textContent = "Delete";
-    remove.addEventListener("click", () => emit("action:removePresetGroup", group.id));
+    const actions = document.createElement("div");
+    actions.className = "preset-item__actions";
+
+    const upBtn = document.createElement("button");
+    upBtn.type = "button";
+    upBtn.className = "preset-item__btn";
+    upBtn.textContent = "\u2191";
+    upBtn.addEventListener("click", () =>
+      emit("action:reorderGroup", { groupId: group.id, direction: -1 })
+    );
+
+    const downBtn = document.createElement("button");
+    downBtn.type = "button";
+    downBtn.className = "preset-item__btn";
+    downBtn.textContent = "\u2193";
+    downBtn.addEventListener("click", () =>
+      emit("action:reorderGroup", { groupId: group.id, direction: 1 })
+    );
+
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "preset-item__btn";
+    editBtn.textContent = "\u270E";
+    editBtn.addEventListener("click", () => {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "preset-item__edit-input";
+      input.value = group.name;
+      name.replaceWith(input);
+      input.focus();
+
+      const commitRename = () => {
+        emit("action:renameGroup", { groupId: group.id, newName: input.value });
+      };
+      input.addEventListener("blur", commitRename);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          input.removeEventListener("blur", commitRename);
+          commitRename();
+        }
+      });
+    });
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "preset-item__btn preset-item__btn--danger";
+    removeBtn.textContent = "\uC0AD\uC81C";
+    removeBtn.addEventListener("click", () => emit("action:removePresetGroup", group.id));
+
+    actions.appendChild(upBtn);
+    actions.appendChild(downBtn);
+    actions.appendChild(editBtn);
+    actions.appendChild(removeBtn);
 
     item.appendChild(text);
-    item.appendChild(remove);
+    item.appendChild(actions);
 
     presetGroupListEl.appendChild(item);
   });
@@ -571,23 +627,70 @@ export function renderPresetValues() {
     const actions = document.createElement("div");
     actions.className = "preset-value__actions";
 
-    const applyBtn = document.createElement("button");
-    applyBtn.type = "button";
-    applyBtn.className = "button button--secondary";
-    applyBtn.textContent = "Apply";
-    applyBtn.addEventListener("click", () =>
-      emit("action:applyPresetValue", { groupId: activeGroup.id, valueId: value.id })
+    const upBtn = document.createElement("button");
+    upBtn.type = "button";
+    upBtn.className = "preset-item__btn";
+    upBtn.textContent = "\u2191";
+    upBtn.addEventListener("click", () =>
+      emit("action:reorderValue", {
+        groupId: activeGroup.id,
+        valueId: value.id,
+        direction: -1,
+      })
     );
+
+    const downBtn = document.createElement("button");
+    downBtn.type = "button";
+    downBtn.className = "preset-item__btn";
+    downBtn.textContent = "\u2193";
+    downBtn.addEventListener("click", () =>
+      emit("action:reorderValue", {
+        groupId: activeGroup.id,
+        valueId: value.id,
+        direction: 1,
+      })
+    );
+
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "preset-item__btn";
+    editBtn.textContent = "\u270E";
+    editBtn.addEventListener("click", () => {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "preset-item__edit-input";
+      input.value = value.label;
+      text.replaceWith(input);
+      input.focus();
+
+      const commitRename = () => {
+        emit("action:renameValue", {
+          groupId: activeGroup.id,
+          valueId: value.id,
+          newLabel: input.value,
+        });
+      };
+      input.addEventListener("blur", commitRename);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          input.removeEventListener("blur", commitRename);
+          commitRename();
+        }
+      });
+    });
 
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
-    removeBtn.className = "button button--ghost";
-    removeBtn.textContent = "Remove";
+    removeBtn.className = "preset-item__btn preset-item__btn--danger";
+    removeBtn.textContent = "\uC0AD\uC81C";
     removeBtn.addEventListener("click", () =>
       emit("action:removePresetValue", { groupId: activeGroup.id, valueId: value.id })
     );
 
-    actions.appendChild(applyBtn);
+    actions.appendChild(upBtn);
+    actions.appendChild(downBtn);
+    actions.appendChild(editBtn);
     actions.appendChild(removeBtn);
 
     item.appendChild(text);
