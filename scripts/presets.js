@@ -28,11 +28,12 @@ const DEFAULT_PRESETS = {
       name: "Camera",
       target: { ifd: "0th", key: 0x010f, label: "Make" },
       values: [
-        "YASHICA ELECTRO35 GTN",
-        "Fujica GM670",
         "Zenza Bronica ETRSi",
         "Zenza Bronica ETRS",
+        "Fujica GM670",
+        "Canon Demi EE17",
         "Ricoh A-2",
+        "YASHICA ELECTRO35 GTN",
       ],
     },
     {
