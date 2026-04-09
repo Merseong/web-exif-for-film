@@ -313,6 +313,61 @@ export function renderEntryChips() {
   });
 }
 
+export function renderApplySummary() {
+  const applySummary = document.getElementById("applySummary");
+  const applyEntryList = document.getElementById("applyEntryList");
+
+  if (applySummary) {
+    applySummary.innerHTML = "";
+
+    const imageCard = document.createElement("div");
+    imageCard.className = "apply-summary__card";
+    const imageLabel = document.createElement("p");
+    imageLabel.className = "apply-summary__label";
+    imageLabel.textContent = "Images";
+    const imageValue = document.createElement("p");
+    imageValue.className = "apply-summary__value";
+    imageValue.textContent = state.images.length;
+    imageCard.appendChild(imageLabel);
+    imageCard.appendChild(imageValue);
+
+    const entryCard = document.createElement("div");
+    entryCard.className = "apply-summary__card";
+    const entryLabel = document.createElement("p");
+    entryLabel.className = "apply-summary__label";
+    entryLabel.textContent = "EXIF Entries";
+    const entryValue = document.createElement("p");
+    entryValue.className = "apply-summary__value";
+    entryValue.textContent = state.entries.length;
+    entryCard.appendChild(entryLabel);
+    entryCard.appendChild(entryValue);
+
+    applySummary.appendChild(imageCard);
+    applySummary.appendChild(entryCard);
+  }
+
+  if (applyEntryList) {
+    applyEntryList.innerHTML = "";
+
+    state.entries.forEach((entry) => {
+      const row = document.createElement("div");
+      row.className = "apply-entry-row";
+
+      const left = document.createElement("span");
+      const tagName = entry.label || entry.keyHex || entry.key;
+      left.textContent = `${tagName} [${entry.ifd}]`;
+
+      const right = document.createElement("span");
+      right.className = "muted";
+      right.textContent = entry.original;
+
+      row.appendChild(left);
+      row.appendChild(right);
+      applyEntryList.appendChild(row);
+    });
+  }
+}
+
 export function renderEntries() {
   entryItemsEl.innerHTML = "";
   if (state.entries.length === 0) {
@@ -644,8 +699,11 @@ export function initUI() {
   });
   on("tab", renderTabs);
   on("step", renderStep);
+  on("step", renderApplySummary);
   on("images", renderStep);
+  on("images", renderApplySummary);
   on("entries", renderStep);
+  on("entries", renderApplySummary);
 
   renderEntries();
   renderEntryChips();
@@ -654,6 +712,7 @@ export function initUI() {
   renderPresetGroups();
   renderPresetValues();
   renderPresetCards();
+  renderApplySummary();
   renderTabs();
   renderStep();
 }
