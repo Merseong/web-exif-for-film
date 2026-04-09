@@ -239,7 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  clearEntriesBtn.addEventListener("click", () => {
+  clearEntriesBtn?.addEventListener("click", () => {
     clearEntries();
     updateApplyStatus("All EXIF entries cleared.", "warning");
   });

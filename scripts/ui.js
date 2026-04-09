@@ -375,6 +375,7 @@ export function renderApplySummary() {
 }
 
 export function renderEntries() {
+  if (!entryItemsEl) return;
   entryItemsEl.innerHTML = "";
   if (state.entries.length === 0) {
     const empty = document.createElement("li");
