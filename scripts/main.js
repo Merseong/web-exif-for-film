@@ -17,6 +17,10 @@ import {
   updateUploadStatus,
   showLoading,
   hideLoading,
+  showMergeModal,
+  hideMergeModal,
+  getMergeSelections,
+  getMergeIncoming,
 } from "./ui.js";
 import {
   addPresetGroup,
@@ -33,6 +37,8 @@ import {
   renameValue,
   reorderGroup,
   reorderValue,
+  mergePresets,
+  normalizePresets,
 } from "./presets.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -332,5 +338,41 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       importPresetsInput.value = "";
     }
+  });
+
+  // --- Merge Presets ---
+
+  const mergePresetsInput = document.getElementById("mergePresetsInput");
+
+  mergePresetsInput?.addEventListener("change", async (event) => {
+    const [file] = event.target.files;
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const normalized = normalizePresets(parsed);
+      showMergeModal(normalized);
+    } catch (error) {
+      updatePresetStatus(`Merge 파일 로드 실패: ${error.message}`, "error");
+    } finally {
+      mergePresetsInput.value = "";
+    }
+  });
+
+  document.getElementById("mergeConfirm")?.addEventListener("click", () => {
+    const incoming = getMergeIncoming();
+    const selections = getMergeSelections();
+    if (!incoming || selections.length === 0) return;
+    mergePresets(incoming, selections);
+    hideMergeModal();
+    updatePresetStatus("프리셋이 병합되었습니다.", "success");
+  });
+
+  document.getElementById("mergeCancel")?.addEventListener("click", hideMergeModal);
+  document.getElementById("mergeClose")?.addEventListener("click", hideMergeModal);
+
+  const mergeOverlay = document.getElementById("mergeOverlay");
+  mergeOverlay?.addEventListener("click", (e) => {
+    if (e.target === mergeOverlay) hideMergeModal();
   });
 });

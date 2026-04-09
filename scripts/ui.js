@@ -18,6 +18,12 @@ const detailMetaEl = document.getElementById("imageDetailMeta");
 const detailListEl = document.getElementById("imageDetailList");
 const detailCloseEl = document.getElementById("imageDetailClose");
 
+const mergeOverlayEl = document.getElementById("mergeOverlay");
+const mergeContentEl = document.getElementById("mergeContent");
+const mergeSummaryEl = document.getElementById("mergeSummary");
+
+let mergeState = null; // { incoming, selections: Map<groupId, Set<valueId>> }
+
 const tabButtons = document.querySelectorAll(".tab");
 const tabApplyEl = document.getElementById("tabApply");
 const tabPresetsEl = document.getElementById("tabPresets");
@@ -783,6 +789,184 @@ export function renderStep() {
   }
 
   renderStepper();
+}
+
+/* ========== Merge Modal ========== */
+
+function isValueNew(srcValue, existingGroup) {
+  if (!existingGroup) return true;
+  return !existingGroup.values.some(
+    (v) => v.value.toLowerCase() === srcValue.value.toLowerCase()
+  );
+}
+
+function updateMergeSummary() {
+  if (!mergeSummaryEl || !mergeState) return;
+  let totalSelected = 0;
+  let newGroups = 0;
+  mergeState.selections.forEach((valueSet, groupId) => {
+    totalSelected += valueSet.size;
+    const srcGroup = mergeState.incoming.groups.find((g) => g.id === groupId);
+    if (srcGroup) {
+      const existingGroup = state.presets.groups.find(
+        (g) => g.target.ifd === srcGroup.target.ifd && g.target.key === srcGroup.target.key
+      );
+      if (!existingGroup && valueSet.size > 0) newGroups++;
+    }
+  });
+  mergeSummaryEl.textContent = `${totalSelected}개 값 선택됨` + (newGroups > 0 ? ` (새 그룹 ${newGroups}개 포함)` : "");
+}
+
+function renderMergeContent() {
+  if (!mergeContentEl || !mergeState) return;
+
+  // Clear everything except mergeSummary
+  const children = Array.from(mergeContentEl.children);
+  children.forEach((child) => {
+    if (child !== mergeSummaryEl) child.remove();
+  });
+
+  mergeState.incoming.groups.forEach((srcGroup) => {
+    const existingGroup = state.presets.groups.find(
+      (g) => g.target.ifd === srcGroup.target.ifd && g.target.key === srcGroup.target.key
+    );
+
+    const groupDiv = document.createElement("div");
+    groupDiv.className = "merge-group";
+
+    // Group header
+    const header = document.createElement("label");
+    header.className = "merge-group__header";
+
+    const groupCheckbox = document.createElement("input");
+    groupCheckbox.type = "checkbox";
+
+    const selectedSet = mergeState.selections.get(srcGroup.id) || new Set();
+    groupCheckbox.checked = selectedSet.size > 0;
+
+    const tagHex = `0x${srcGroup.target.key.toString(16).padStart(4, "0")}`;
+    const badge = document.createElement("span");
+    badge.className = existingGroup ? "merge-label merge-label--exists" : "merge-label merge-label--new";
+    badge.textContent = existingGroup ? "이미 존재" : "새 그룹";
+
+    header.appendChild(groupCheckbox);
+    header.append(` ${srcGroup.name} [${srcGroup.target.ifd} ${tagHex}] `);
+    header.appendChild(badge);
+
+    // Values
+    const valuesDiv = document.createElement("div");
+    valuesDiv.className = "merge-group__values";
+
+    srcGroup.values.forEach((srcValue) => {
+      const valueNew = isValueNew(srcValue, existingGroup);
+
+      const valueLabel = document.createElement("label");
+      valueLabel.className = "merge-value";
+
+      const valueCheckbox = document.createElement("input");
+      valueCheckbox.type = "checkbox";
+      valueCheckbox.checked = selectedSet.has(srcValue.id);
+
+      const valueBadge = document.createElement("span");
+      valueBadge.className = valueNew ? "merge-label merge-label--new" : "merge-label merge-label--exists";
+      valueBadge.textContent = valueNew ? "새 항목" : "이미 존재";
+
+      valueCheckbox.addEventListener("change", () => {
+        let set = mergeState.selections.get(srcGroup.id);
+        if (!set) {
+          set = new Set();
+          mergeState.selections.set(srcGroup.id, set);
+        }
+        if (valueCheckbox.checked) {
+          set.add(srcValue.id);
+        } else {
+          set.delete(srcValue.id);
+        }
+        // Update group checkbox
+        groupCheckbox.checked = set.size > 0;
+        updateMergeSummary();
+      });
+
+      valueLabel.appendChild(valueCheckbox);
+      valueLabel.append(` ${srcValue.label} `);
+      valueLabel.appendChild(valueBadge);
+      valuesDiv.appendChild(valueLabel);
+    });
+
+    // Group checkbox toggles all values
+    groupCheckbox.addEventListener("change", () => {
+      let set = mergeState.selections.get(srcGroup.id);
+      if (!set) {
+        set = new Set();
+        mergeState.selections.set(srcGroup.id, set);
+      }
+      if (groupCheckbox.checked) {
+        srcGroup.values.forEach((v) => set.add(v.id));
+      } else {
+        set.clear();
+      }
+      // Re-render to update value checkboxes
+      renderMergeContent();
+    });
+
+    groupDiv.appendChild(header);
+    groupDiv.appendChild(valuesDiv);
+    mergeContentEl.appendChild(groupDiv);
+  });
+
+  updateMergeSummary();
+}
+
+export function showMergeModal(incomingPresets) {
+  mergeState = {
+    incoming: incomingPresets,
+    selections: new Map(),
+  };
+
+  // Auto-select new values (those that don't exist in current presets)
+  incomingPresets.groups.forEach((srcGroup) => {
+    const existingGroup = state.presets.groups.find(
+      (g) => g.target.ifd === srcGroup.target.ifd && g.target.key === srcGroup.target.key
+    );
+
+    const newValueIds = new Set();
+    srcGroup.values.forEach((srcValue) => {
+      if (isValueNew(srcValue, existingGroup)) {
+        newValueIds.add(srcValue.id);
+      }
+    });
+
+    if (newValueIds.size > 0) {
+      mergeState.selections.set(srcGroup.id, newValueIds);
+    }
+  });
+
+  renderMergeContent();
+  if (mergeOverlayEl) {
+    mergeOverlayEl.classList.add("modal-overlay--visible");
+  }
+}
+
+export function hideMergeModal() {
+  if (mergeOverlayEl) {
+    mergeOverlayEl.classList.remove("modal-overlay--visible");
+  }
+  mergeState = null;
+}
+
+export function getMergeSelections() {
+  if (!mergeState) return [];
+  const result = [];
+  mergeState.selections.forEach((valueSet, groupId) => {
+    if (valueSet.size > 0) {
+      result.push({ groupId, valueIds: [...valueSet] });
+    }
+  });
+  return result;
+}
+
+export function getMergeIncoming() {
+  return mergeState?.incoming || null;
 }
 
 export function initUI() {

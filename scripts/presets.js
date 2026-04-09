@@ -93,7 +93,7 @@ function normalizeGroup(group) {
   };
 }
 
-function normalizePresets(raw) {
+export function normalizePresets(raw) {
   const parsed = raw && typeof raw === "object" ? raw : {};
   const groups = Array.isArray(parsed.groups)
     ? parsed.groups.map(normalizeGroup).filter(Boolean)
@@ -289,4 +289,51 @@ export function importPresetJson(text) {
   state.presets = normalizePresets(parsed);
   persistPresets();
   return state.presets;
+}
+
+export function mergePresets(incoming, selections) {
+  selections.forEach(({ groupId, valueIds }) => {
+    const srcGroup = incoming.groups.find((g) => g.id === groupId);
+    if (!srcGroup) return;
+
+    // Find matching existing group by ifd+key
+    const existingGroup = state.presets.groups.find(
+      (g) => g.target.ifd === srcGroup.target.ifd && g.target.key === srcGroup.target.key
+    );
+
+    if (existingGroup) {
+      // Add selected values that don't already exist
+      valueIds.forEach((vid) => {
+        const srcValue = srcGroup.values.find((v) => v.id === vid);
+        if (!srcValue) return;
+        const duplicate = existingGroup.values.some(
+          (v) => v.value.toLowerCase() === srcValue.value.toLowerCase()
+        );
+        if (!duplicate) {
+          existingGroup.values.push({
+            id: generateId("value"),
+            label: srcValue.label,
+            value: srcValue.value,
+          });
+        }
+      });
+    } else {
+      // Add new group with selected values only
+      const selectedValues = valueIds
+        .map((vid) => srcGroup.values.find((v) => v.id === vid))
+        .filter(Boolean)
+        .map((v) => ({ id: generateId("value"), label: v.label, value: v.value }));
+
+      if (selectedValues.length > 0) {
+        state.presets.groups.push({
+          id: generateId("group"),
+          name: srcGroup.name,
+          target: { ...srcGroup.target },
+          values: selectedValues,
+        });
+      }
+    }
+  });
+
+  persistPresets();
 }
