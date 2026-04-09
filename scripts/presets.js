@@ -1,4 +1,4 @@
-import { state } from "./state.js";
+import { state, emit } from "./state.js";
 
 const STORAGE_KEY = "exifPresetGroups";
 
@@ -32,6 +32,7 @@ function clonePresets(data) {
 
 function persistPresets() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.presets));
+  emit("presets");
 }
 
 function generateId(prefix = "preset") {
@@ -227,6 +228,51 @@ export function getPresetValue(groupId, valueId) {
   const value = group.values.find((item) => item.id === valueId);
   if (!value) return null;
   return { group, value };
+}
+
+export function renameGroup(groupId, newName) {
+  const group = state.presets.groups.find((g) => g.id === groupId);
+  if (!group) return;
+  const trimmed = newName.trim();
+  if (!trimmed) return;
+  group.name = trimmed;
+  persistPresets();
+}
+
+export function renameValue(groupId, valueId, newLabel) {
+  const group = state.presets.groups.find((g) => g.id === groupId);
+  if (!group) return;
+  const value = group.values.find((v) => v.id === valueId);
+  if (!value) return;
+  const trimmed = newLabel.trim();
+  if (!trimmed) return;
+  value.label = trimmed;
+  value.value = trimmed;
+  persistPresets();
+}
+
+export function reorderGroup(groupId, direction) {
+  const idx = state.presets.groups.findIndex((g) => g.id === groupId);
+  if (idx < 0) return;
+  const newIdx = idx + direction;
+  if (newIdx < 0 || newIdx >= state.presets.groups.length) return;
+  const temp = state.presets.groups[idx];
+  state.presets.groups[idx] = state.presets.groups[newIdx];
+  state.presets.groups[newIdx] = temp;
+  persistPresets();
+}
+
+export function reorderValue(groupId, valueId, direction) {
+  const group = state.presets.groups.find((g) => g.id === groupId);
+  if (!group) return;
+  const idx = group.values.findIndex((v) => v.id === valueId);
+  if (idx < 0) return;
+  const newIdx = idx + direction;
+  if (newIdx < 0 || newIdx >= group.values.length) return;
+  const temp = group.values[idx];
+  group.values[idx] = group.values[newIdx];
+  group.values[newIdx] = temp;
+  persistPresets();
 }
 
 export function exportPresetJson() {
