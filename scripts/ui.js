@@ -208,6 +208,72 @@ export function renderThumbnails() {
   });
 }
 
+export function renderPresetCards(filter = "") {
+  const presetCardGroups = document.getElementById("presetCardGroups");
+  if (!presetCardGroups) return;
+
+  presetCardGroups.innerHTML = "";
+  const lowerFilter = filter.toLowerCase();
+
+  state.presets.groups.forEach((group) => {
+    const section = document.createElement("div");
+    section.className = "preset-card-group";
+
+    const label = document.createElement("div");
+    label.className = "preset-card-group__label";
+
+    const matchingValues = lowerFilter
+      ? group.values.filter((v) => v.label.toLowerCase().includes(lowerFilter))
+      : group.values;
+
+    if (lowerFilter && matchingValues.length === 0) {
+      section.classList.add("preset-card-group--dim");
+      label.textContent = `${group.name} — 일치하는 값 없음`;
+      section.appendChild(label);
+      presetCardGroups.appendChild(section);
+      return;
+    }
+
+    if (lowerFilter && matchingValues.length < group.values.length) {
+      label.textContent = `${group.name} — ${group.values.length}개 중 ${matchingValues.length}개 표시`;
+    } else {
+      label.textContent = group.name;
+    }
+
+    section.appendChild(label);
+
+    const cardsWrapper = document.createElement("div");
+    cardsWrapper.className = "preset-card-group__cards";
+
+    matchingValues.forEach((value) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "preset-card";
+      btn.textContent = value.label;
+
+      // Check if this preset value is currently selected in entries
+      const isSelected = state.entries.some(
+        (entry) =>
+          entry.ifd === group.target.ifd &&
+          entry.key === group.target.key &&
+          entry.original === value.value
+      );
+      if (isSelected) {
+        btn.classList.add("preset-card--selected");
+      }
+
+      btn.addEventListener("click", () => {
+        emit("action:applyPresetValue", { groupId: group.id, valueId: value.id });
+      });
+
+      cardsWrapper.appendChild(btn);
+    });
+
+    section.appendChild(cardsWrapper);
+    presetCardGroups.appendChild(section);
+  });
+}
+
 export function renderEntries() {
   entryItemsEl.innerHTML = "";
   if (state.entries.length === 0) {
@@ -523,12 +589,18 @@ export function renderStep() {
 }
 
 export function initUI() {
+  const presetSearchInput = document.getElementById("presetSearch");
+
   on("entries", renderEntries);
   on("images", renderImages);
   on("images", renderThumbnails);
   on("presets", () => {
     renderPresetGroups();
     renderPresetValues();
+    renderPresetCards(presetSearchInput ? presetSearchInput.value : "");
+  });
+  on("entries", () => {
+    renderPresetCards(presetSearchInput ? presetSearchInput.value : "");
   });
   on("tab", renderTabs);
   on("step", renderStep);
@@ -540,6 +612,7 @@ export function initUI() {
   renderThumbnails();
   renderPresetGroups();
   renderPresetValues();
+  renderPresetCards();
   renderTabs();
   renderStep();
 }

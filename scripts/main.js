@@ -11,6 +11,7 @@ import {
 import { state, on, emit } from "./state.js";
 import {
   initUI,
+  renderPresetCards,
   updateApplyStatus,
   updatePresetStatus,
   updateUploadStatus,
@@ -75,6 +76,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initPresetStore();
   initUI();
+
+  // --- Preset search ---
+  const presetSearchInput = document.getElementById("presetSearch");
+  if (presetSearchInput) {
+    presetSearchInput.addEventListener("input", () => {
+      renderPresetCards(presetSearchInput.value);
+    });
+  }
 
   // --- Action event handlers ---
 
