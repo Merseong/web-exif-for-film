@@ -416,6 +416,7 @@ select {
   background: rgba(255, 255, 255, 0.02);
   display: grid;
   gap: 12px;
+  align-content: start;
 }
 
 .preset-column__header {
