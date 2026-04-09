@@ -174,6 +174,40 @@ if (detailCloseEl) {
   detailCloseEl.addEventListener("click", hideDetail);
 }
 
+export function renderThumbnails() {
+  const thumbnailGrid = document.getElementById("thumbnailGrid");
+  if (!thumbnailGrid) return;
+
+  thumbnailGrid.innerHTML = "";
+
+  state.images.forEach((image) => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "thumbnail";
+
+    const img = document.createElement("img");
+    img.className = "thumbnail__img";
+    img.src = image.dataUrl;
+    img.alt = image.name;
+
+    const name = document.createElement("span");
+    name.className = "thumbnail__name";
+    name.textContent = image.name;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "thumbnail__remove";
+    removeBtn.textContent = "\u00d7";
+    removeBtn.addEventListener("click", () => {
+      emit("action:removeImage", image.id);
+    });
+
+    wrapper.appendChild(img);
+    wrapper.appendChild(name);
+    wrapper.appendChild(removeBtn);
+    thumbnailGrid.appendChild(wrapper);
+  });
+}
+
 export function renderEntries() {
   entryItemsEl.innerHTML = "";
   if (state.entries.length === 0) {
@@ -491,6 +525,7 @@ export function renderStep() {
 export function initUI() {
   on("entries", renderEntries);
   on("images", renderImages);
+  on("images", renderThumbnails);
   on("presets", () => {
     renderPresetGroups();
     renderPresetValues();
@@ -502,6 +537,7 @@ export function initUI() {
 
   renderEntries();
   renderImages();
+  renderThumbnails();
   renderPresetGroups();
   renderPresetValues();
   renderTabs();
