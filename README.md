@@ -31,6 +31,7 @@ Open `http://localhost:8000` in a browser.
 - [x] ZIP batch download (JSZip)
 - [x] i18n (ko / en / ja)
 - [x] Light / Dark / System theme
+- [ ] EXIF viewer / extractor
 - [ ] PWA setting
 - [ ] CD setting
 
