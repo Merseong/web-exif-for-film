@@ -274,6 +274,45 @@ export function renderPresetCards(filter = "") {
   });
 }
 
+export function renderEntryChips() {
+  const entryChips = document.getElementById("entryChips");
+  if (!entryChips) return;
+
+  entryChips.innerHTML = "";
+
+  if (state.entries.length === 0) {
+    const empty = document.createElement("span");
+    empty.className = "muted";
+    empty.textContent = "설정된 EXIF 엔트리가 없습니다.";
+    entryChips.appendChild(empty);
+    return;
+  }
+
+  const label = document.createElement("span");
+  label.className = "muted";
+  label.textContent = `설정된 EXIF 엔트리 (${state.entries.length})`;
+  entryChips.appendChild(label);
+
+  state.entries.forEach((entry) => {
+    const chip = document.createElement("span");
+    chip.className = "entry-chip";
+
+    const tagLabel = entry.label || entry.keyHex || entry.key;
+    chip.innerHTML = `<strong>${tagLabel}</strong> = ${entry.original}`;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "entry-chip__remove";
+    removeBtn.textContent = "\u00d7";
+    removeBtn.addEventListener("click", () => {
+      emit("action:removeEntry", entry.id);
+    });
+
+    chip.appendChild(removeBtn);
+    entryChips.appendChild(chip);
+  });
+}
+
 export function renderEntries() {
   entryItemsEl.innerHTML = "";
   if (state.entries.length === 0) {
@@ -592,6 +631,7 @@ export function initUI() {
   const presetSearchInput = document.getElementById("presetSearch");
 
   on("entries", renderEntries);
+  on("entries", renderEntryChips);
   on("images", renderImages);
   on("images", renderThumbnails);
   on("presets", () => {
@@ -608,6 +648,7 @@ export function initUI() {
   on("entries", renderStep);
 
   renderEntries();
+  renderEntryChips();
   renderImages();
   renderThumbnails();
   renderPresetGroups();
