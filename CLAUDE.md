@@ -67,3 +67,15 @@ Navigation events: `"tab"`, `"step"` — triggered by main.js when user switches
 - CSS uses custom properties defined in `:root` (dark theme). BEM-like class naming (`block__element--modifier`).
 - Font stack: Pretendard, Inter, system-ui.
 - Preset merge duplicate detection: groups matched by `target.ifd + target.key`, values by case-insensitive string comparison.
+
+<!-- EXPERIMENTAL:code-mode-style START (2026-11-18 추가) — 효과가 없으면 이 START~END 블록을 통째로 지운다 -->
+## [실험] 도구 호출 묶기 (Code Mode 방식 흉내)
+
+> **실험 중인 지침.** Claude Code의 실험 기능 `CLAUDE_CODE_EXPERIMENTAL_CODE_MODE`가 하는 일(도구 호출을 코드 한 번으로 묶고, 중간 결과는 코드 안에서 걸러 요약만 남김)을 일반 도구로 흉내 낸다. 이 파일의 다른 지침과 부딪히면 **다른 지침을 따른다.**
+
+- **서로 기다릴 필요 없는 호출은 한 응답에 병렬로** 보낸다 (파일 여러 개 읽기, 독립 검색, 상태 확인 여러 개).
+- **같은 일을 여러 건 반복할 땐** 도구를 N번 부르지 말고 `node`/`python3`/셸 스크립트 하나로 돌린다. 스크립트는 세션 scratchpad에 두고, 출력은 건수·실패 항목·요약만 찍는다 (원본 전체를 컨텍스트에 붓지 않는다).
+- **큰 출력은 파일로** 받고 `grep`/`jq`/`head`로 필요한 부분만 본다.
+- **묶지 않는 것**: 코드 수정, 배포·마이그레이션·삭제처럼 되돌리기 어려운 작업, 앞 결과를 보고 판단해야 하는 단계. 이런 건 한 단계씩 확인하며 진행한다.
+- 진짜 Code Mode는 터미널에서 `CLAUDE_CODE_EXPERIMENTAL_CODE_MODE=1 claude`로 띄울 때만 켜진다 (VSCode 확장·`-p`·백그라운드 세션에서는 안 켜지고, 켜면 Chrome/computer use·Remote Control이 꺼진다). 이 레포의 설정 파일에는 넣지 않는다.
+<!-- EXPERIMENTAL:code-mode-style END -->
