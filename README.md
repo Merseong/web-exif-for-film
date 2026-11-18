@@ -23,6 +23,16 @@ python3 -m http.server 8000
 
 Open `http://localhost:8000` in a browser.
 
+## Single-File Build
+
+Bundle the entire app into one self-contained HTML file (all JS modules, CSS, and CDN dependencies — piexifjs & JSZip — inlined). Requires Node.js, no dependencies to install:
+
+```bash
+node build-single.mjs
+```
+
+Output: `build/exif-editor.html`. Open it directly in any browser with no server, or distribute it as a single offline file.
+
 ## Progress
 
 - [x] EXIF editing on browser (piexifjs)
